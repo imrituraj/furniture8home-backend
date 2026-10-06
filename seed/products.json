@@ -1,0 +1,982 @@
+[
+  {
+    "id": 101,
+    "slug": "aura-dusty-lilac-dining-chairs",
+    "name": "Aura Curved Dining Chairs \u2014 Dusty Lilac (Pair)",
+    "cat": "Dining",
+    "price": "\u20b914,500",
+    "priceNum": 14500,
+    "badge": "Sold in Pairs",
+    "rating": 4.9,
+    "reviews": 28,
+    "img": "images/chairs/B612_20221205_111922_652.jpg",
+    "desc": "Sculptural curved bucket-back dining chairs upholstered in stain-resistant dusty lilac velvet. Built over a reinforced steel sub-frame with slim brushed-brass tapered legs for a luxe contemporary dining space.",
+    "dims": "Sold in pairs \u00b7 W 54cm \u00b7 D 58cm \u00b7 H 86cm \u00b7 Seat H 48cm",
+    "material": "Luxe Velvet \u00b7 High Density 40D Foam \u00b7 Brass-Finish Steel Legs",
+    "features": [
+      "Ergonomic wrap-around backrest",
+      "Floor-protection glides included",
+      "Wipe-clean velvet treatment"
+    ]
+  },
+  {
+    "id": 102,
+    "slug": "celeste-marine-blue-accent-chairs",
+    "name": "Celeste Velvet Dining Chairs \u2014 Marine Blue (Pair)",
+    "cat": "Dining",
+    "price": "\u20b915,000",
+    "priceNum": 15000,
+    "badge": "Bestseller",
+    "rating": 5.0,
+    "reviews": 34,
+    "img": "images/chairs/B612_20221205_112007_914.jpg",
+    "desc": "Deep marine blue velvet with tailored channel tufting and contrast gold-capped legs. Offers supportive lumbar contouring for long dinner conversations.",
+    "dims": "Sold in pairs \u00b7 W 55cm \u00b7 D 60cm \u00b7 H 88cm \u00b7 Seat H 48cm",
+    "material": "Marine Velvet \u00b7 Cast Iron Core \u00b7 Gold-Tipped Legs",
+    "features": [
+      "Channel-quilted backrest",
+      "Anti-sag curved seat cushion",
+      "Available in custom jewel tones"
+    ]
+  },
+  {
+    "id": 103,
+    "slug": "artisan-woven-dining-chair",
+    "name": "Artisan Solid Oak Dining Chair \u2014 Natural Weave",
+    "cat": "Dining",
+    "price": "\u20b99,200",
+    "priceNum": 9200,
+    "badge": "Handmade",
+    "rating": 4.8,
+    "reviews": 19,
+    "img": "images/chairs/image.jpg",
+    "desc": "Clean minimalist dining chair crafted from seasoned oak with natural textured fiber seat. Perfect for organic Japandi and Scandinavian style dining areas.",
+    "dims": "W 50cm \u00b7 D 52cm \u00b7 H 82cm \u00b7 Seat H 46cm",
+    "material": "Solid Seasoned Oak \u00b7 Natural Fiber Weave \u00b7 Clear Matte Lacquer",
+    "features": [
+      "Steam-bent backrest",
+      "Mortise-and-tenon joints",
+      "Natural organic aesthetic"
+    ]
+  },
+  {
+    "id": 104,
+    "slug": "nordic-cane-back-dining-chair",
+    "name": "Kaziranga Cane-Back Dining Chair \u2014 Teak & Rattan",
+    "cat": "Dining",
+    "price": "\u20b912,800",
+    "priceNum": 12800,
+    "badge": "Natural Cane",
+    "rating": 4.9,
+    "reviews": 42,
+    "img": "images/chairs/image_1.jpg",
+    "desc": "Hand-woven natural cane backrest set into a solid Assam teakwood frame. Fitted with an oatmeal linen cushioned seat pad for breathable all-day comfort in Assam summers.",
+    "dims": "W 52cm \u00b7 D 56cm \u00b7 H 84cm \u00b7 Seat H 47cm",
+    "material": "Solid Assam Teakwood \u00b7 Natural Assam Rattan Cane \u00b7 Linen Upholstery",
+    "features": [
+      "Breathable hand-woven cane",
+      "High-density foam cushion",
+      "Water-resistant wood sealer"
+    ]
+  },
+  {
+    "id": 105,
+    "slug": "heritage-spindle-windsor-chair",
+    "name": "Heritage Spindle Windsor Chair \u2014 Walnut Finish",
+    "cat": "Dining",
+    "price": "\u20b98,900",
+    "priceNum": 8900,
+    "badge": "Solid Timber",
+    "rating": 4.7,
+    "reviews": 16,
+    "img": "images/chairs/image_2.jpg",
+    "desc": "A timeless spindle-back Windsor chair with a deeply sculpted saddle seat and splayed turned legs. Built from seasoned hardwood in a warm dark walnut luster.",
+    "dims": "W 56cm \u00b7 D 54cm \u00b7 H 92cm \u00b7 Seat H 46cm",
+    "material": "Seasoned Teak Hardwood \u00b7 Dark Walnut Polish",
+    "features": [
+      "Comfort saddle seat carving",
+      "Reinforced H-stretcher base",
+      "Heirloom joinery guaranteed for life"
+    ]
+  },
+  {
+    "id": 201,
+    "slug": "royal-indigo-chenille-l-sectional",
+    "name": "Royal Indigo Chenille L-Sectional with Chaise",
+    "cat": "Sectionals",
+    "price": "\u20b948,500",
+    "priceNum": 48500,
+    "badge": "Bestseller",
+    "rating": 5.0,
+    "reviews": 51,
+    "img": "images/lsofa/0e06df108cba5f38f4c09e7d95643405.jpg",
+    "desc": "Our most loved 5-seater corner sectional upholstered in heavy-duty indigo blue chenille fabric. Features pocket-spring seating, reversible chaise, and modular configuration.",
+    "dims": "W 274cm \u00b7 D 168cm (Chaise) \u00b7 H 88cm \u00b7 Seat D 62cm",
+    "material": "Premium Chenille Fabric \u00b7 Salwood Inner Frame \u00b7 40D High-Resilience Foam",
+    "features": [
+      "Reversible left or right chaise",
+      "Anti-sag pocket coil springs",
+      "Includes 4 designer throw cushions"
+    ]
+  },
+  {
+    "id": 202,
+    "slug": "brahmaputra-charcoal-tufted-6-seater-sofa",
+    "name": "Brahmaputra Charcoal Tufted 6-Seater L-Sofa",
+    "cat": "Sectionals",
+    "price": "\u20b956,000",
+    "priceNum": 56000,
+    "badge": "Grand 6-Seater",
+    "rating": 4.9,
+    "reviews": 39,
+    "img": "images/lsofa/3e769403acea61e2f0a02902364c1f63.jpg",
+    "desc": "Expansive family sectional sofa in deep graphite weave. Features tufted back cushions, wide padded armrests, and extra seating depth designed for living rooms.",
+    "dims": "W 295cm \u00b7 D 180cm (Chaise) \u00b7 H 90cm \u00b7 Seat D 65cm",
+    "material": "Graphite Woven Blend \u00b7 Solid Timber Frame \u00b7 Double Layer Cushioning",
+    "features": [
+      "High-back cervical head support",
+      "Spacious 6-adult seating capacity",
+      "Removable washable cushion covers"
+    ]
+  },
+  {
+    "id": 203,
+    "slug": "kaziranga-warm-earth-sectional",
+    "name": "Kaziranga Warm Earth 5-Seater Sectional",
+    "cat": "Sectionals",
+    "price": "\u20b949,500",
+    "priceNum": 49500,
+    "badge": "Custom Size",
+    "rating": 4.8,
+    "reviews": 27,
+    "img": "images/lsofa/783f46aab0d564bb19c97477c32749f1.jpg",
+    "desc": "Earth-toned taupe chenille corner sofa designed to blend seamlessly into warm wooden interiors. Solid hardwood internal framing with 10-year structural warranty.",
+    "dims": "W 260cm \u00b7 D 165cm \u00b7 H 86cm",
+    "material": "Taupe Textured Chenille \u00b7 Solid Salwood Core \u00b7 40D Foam",
+    "features": [
+      "Stain-resistant fabric coating",
+      "Solid hardwood support legs",
+      "Free delivery & assembly in Guwahati"
+    ]
+  },
+  {
+    "id": 204,
+    "slug": "nilachal-slate-grey-low-profile-sectional",
+    "name": "Nilachal Slate Grey Low-Profile Sectional",
+    "cat": "Sectionals",
+    "price": "\u20b944,000",
+    "priceNum": 44000,
+    "badge": "Modern Minimal",
+    "rating": 4.7,
+    "reviews": 23,
+    "img": "images/lsofa/B612_20220730_111518_887.jpg",
+    "desc": "Contemporary low-slung L-sectional with broad flat armrests and sleek chrome feet. Minimalist profile that keeps modern living rooms feeling open and spacious.",
+    "dims": "W 250cm \u00b7 D 155cm \u00b7 H 78cm \u00b7 Seat H 42cm",
+    "material": "Slate Grey Textured Poly-Linen \u00b7 Metal Legs \u00b7 Multi-Density Foam",
+    "features": [
+      "Modern low-profile silhouette",
+      "Ultra-wide resting armrests",
+      "Easy to clean underneath"
+    ]
+  },
+  {
+    "id": 205,
+    "slug": "dispur-custom-velvet-sectional-royal-mauve",
+    "name": "Dispur Bespoke Velvet Sectional \u2014 Royal Mauve",
+    "cat": "Sectionals",
+    "price": "\u20b952,500",
+    "priceNum": 52500,
+    "badge": "Workshop Special",
+    "rating": 4.9,
+    "reviews": 31,
+    "img": "images/lsofa/IMG-20210802-WA0015.jpg",
+    "desc": "Directly from our Guwahati workshop: rich royal mauve velvet sectional featuring tailored piping, deep pocket seating, and custom bolster pillows.",
+    "dims": "W 270cm \u00b7 D 170cm \u00b7 H 88cm",
+    "material": "Luxe Velvet \u00b7 Hardwood Structure \u00b7 Pocket Springs & 40D Foam",
+    "features": [
+      "Hand-upholstered by master craftsmen",
+      "Plush feather-touch back cushions",
+      "Custom color options available"
+    ]
+  },
+  {
+    "id": 206,
+    "slug": "beltola-modern-corner-suite-forest-spruce",
+    "name": "Beltola Modern Corner Suite \u2014 Forest Spruce",
+    "cat": "Sectionals",
+    "price": "\u20b947,000",
+    "priceNum": 47000,
+    "badge": "Trending Color",
+    "rating": 4.9,
+    "reviews": 29,
+    "img": "images/lsofa/IMG-20210805-WA0001.jpg",
+    "desc": "Rich forest spruce teal-green sectional sofa with deep button-tufted back panels and supportive lumber geometry. A striking centerpiece for contemporary homes.",
+    "dims": "W 260cm \u00b7 D 160cm \u00b7 H 85cm",
+    "material": "Forest Green Velvet-Chenille \u00b7 Solid Teak Wood Frame Base",
+    "features": [
+      "High density anti-sag core",
+      "Includes 3 patterned accent cushions",
+      "Custom chaise orientation"
+    ]
+  },
+  {
+    "id": 207,
+    "slug": "saraighat-oatmeal-linen-luxury-sectional",
+    "name": "Saraighat Oatmeal Linen Luxury Sectional",
+    "cat": "Sectionals",
+    "price": "\u20b954,500",
+    "priceNum": 54500,
+    "badge": "Premium Linen",
+    "rating": 5.0,
+    "reviews": 44,
+    "img": "images/lsofa/IMG-20210919-WA0047.jpg",
+    "desc": "Airy, luxurious 6-seater corner sofa in textured oatmeal linen-blend. Generous proportions with down-alternative padded cushions for cloud-like seating.",
+    "dims": "W 285cm \u00b7 D 175cm \u00b7 H 86cm",
+    "material": "Heavyweight Linen Blend \u00b7 Kiln-Dried Hardwood \u00b7 Dual Layer Foam",
+    "features": [
+      "Stain-guard fabric treatment",
+      "Generous seat depth",
+      "Elegant tapered timber legs"
+    ]
+  },
+  {
+    "id": 208,
+    "slug": "guwahati-compact-corner-sectional",
+    "name": "Guwahati Compact Corner Sectional \u2014 Natural Sand",
+    "cat": "Sectionals",
+    "price": "\u20b938,500",
+    "priceNum": 38500,
+    "badge": "Apartment Size",
+    "rating": 4.8,
+    "reviews": 38,
+    "img": "images/lsofa/IMG-20210919-WA0049.jpg",
+    "desc": "Engineered specifically for apartments and compact living rooms without sacrificing seating space. Warm natural sand upholstery with firm, posture-friendly support.",
+    "dims": "W 220cm \u00b7 D 145cm \u00b7 H 84cm",
+    "material": "Sand Poly-Cotton Weave \u00b7 Solid Salwood \u00b7 High-Resilience Foam",
+    "features": [
+      "Fits through tight Guwahati staircases & doors",
+      "Space-efficient corner fit",
+      "Budget-friendly workshop direct"
+    ]
+  },
+  {
+    "id": 209,
+    "slug": "kamakhya-grand-chesterfield-l-sectional",
+    "name": "Kamakhya Grand Chesterfield L-Sectional",
+    "cat": "Sectionals",
+    "price": "\u20b962,000",
+    "priceNum": 62000,
+    "badge": "Luxury Classic",
+    "rating": 5.0,
+    "reviews": 21,
+    "img": "images/lsofa/IMG-20230106-WA0003.jpg",
+    "desc": "Deep diamond button-tufting, rolled arms, and brass nailhead studs adorn this regal Chesterfield corner suite. Upholstered in rich vintage-finish distressed fabric.",
+    "dims": "W 290cm \u00b7 D 180cm \u00b7 H 82cm",
+    "material": "Vintage Suede-Touch Fabric \u00b7 Solid Teak Wood Frame \u00b7 Brass Nailheads",
+    "features": [
+      "100% hand-tufted diamond buttons",
+      "Heirloom rolled Chesterfield arms",
+      "Turned teakwood legs"
+    ]
+  },
+  {
+    "id": 210,
+    "slug": "furniture8home-signature-workshop-sectional",
+    "name": "Furniture8home Signature Workshop Sectional",
+    "cat": "Sectionals",
+    "price": "\u20b958,500",
+    "priceNum": 58500,
+    "badge": "Workshop Craft",
+    "rating": 4.9,
+    "reviews": 47,
+    "img": "images/lsofa/IMG_20210625_095157.jpg",
+    "desc": "Photographed on our Guwahati workshop floor: custom dual-tone graphite and silver chenille with integrated wooden arm ledge, cup holders, and high back support.",
+    "dims": "W 280cm \u00b7 D 170cm \u00b7 H 90cm",
+    "material": "Dual-Tone Chenille \u00b7 Assam Teak Frame \u00b7 High Density 45D Foam",
+    "features": [
+      "Built-in teakwood side drink tray",
+      "Anti-sag zigzag spring foundation",
+      "10-Year structural frame guarantee"
+    ]
+  },
+  {
+    "id": 211,
+    "slug": "umananda-sky-blue-plush-corner-suite",
+    "name": "Umananda Sky Blue Plush Corner Suite",
+    "cat": "Sectionals",
+    "price": "\u20b951,000",
+    "priceNum": 51000,
+    "badge": "Plush Comfort",
+    "rating": 4.9,
+    "reviews": 25,
+    "img": "images/lsofa/Picsart_22-06-02_12-01-50-691.jpg",
+    "desc": "Refreshing sky blue velvet upholstery brings natural light and serenity to your living room. Generous 5-seater L-layout with oversized scatter cushions.",
+    "dims": "W 270cm \u00b7 D 165cm \u00b7 H 86cm",
+    "material": "Sky Blue Soft-Touch Velvet \u00b7 Seasoned Salwood \u00b7 40D Foam",
+    "features": [
+      "Plush fiber-filled back pillows",
+      "Solid hardwood inner framing",
+      "Customizable chaise orientation"
+    ]
+  },
+  {
+    "id": 212,
+    "slug": "haflong-contemporary-dual-tone-sectional",
+    "name": "Haflong Contemporary Dual-Tone Sectional",
+    "cat": "Sectionals",
+    "price": "\u20b949,000",
+    "priceNum": 49000,
+    "badge": "Designer Pick",
+    "rating": 4.8,
+    "reviews": 33,
+    "img": "images/lsofa/Picsart_22-06-02_12-03-55-289.jpg",
+    "desc": "Sophisticated charcoal base frame paired with misty grey textured seat cushions and contrasting patterned throw pillows. Built for heavy family use.",
+    "dims": "W 265cm \u00b7 D 165cm \u00b7 H 88cm",
+    "material": "Commercial-Grade Heavy Weave \u00b7 Solid Timber Core",
+    "features": [
+      "Heavy-duty 50,000 rub count fabric",
+      "Reinforced corner block joinery",
+      "Easy spot-clean upholstery"
+    ]
+  },
+  {
+    "id": 213,
+    "slug": "assam-heritage-suede-l-sofa",
+    "name": "Assam Heritage Suede L-Sofa \u2014 Cocoa Brown",
+    "cat": "Sectionals",
+    "price": "\u20b946,500",
+    "priceNum": 46500,
+    "badge": "Easy Care",
+    "rating": 4.7,
+    "reviews": 36,
+    "img": "images/lsofa/Screenshot_20210405-102214~2.png",
+    "desc": "Rich cocoa brown micro-suede upholstery with contrast stitching. Incredibly soft to the touch, water repellent, and ideal for homes with kids and pets.",
+    "dims": "W 255cm \u00b7 D 160cm \u00b7 H 86cm",
+    "material": "Micro-Suede Upholstery \u00b7 Solid Salwood \u00b7 Pocket Spring Cushioning",
+    "features": [
+      "Pet and kid friendly micro-suede",
+      "Plush padded arm pillows",
+      "Reversible left/right orientation"
+    ]
+  },
+  {
+    "id": 214,
+    "slug": "horizon-two-tone-chenille-sectional",
+    "name": "Horizon Two-Tone Chenille L-Sectional (Blue & Grey)",
+    "cat": "Sectionals",
+    "price": "\u20b945,500",
+    "priceNum": 45500,
+    "badge": "Bestseller",
+    "rating": 4.9,
+    "reviews": 64,
+    "img": "images/lsofa/blue-and-grey-chenille-sofiabluegreylhd-flipkart-perfect-homes-original-imafw9nh8zn2gwzb.jpeg",
+    "desc": "Our iconic two-tone design featuring royal blue accents over heather grey chenille. High density foam cushioning with integrated lumbar pillows.",
+    "dims": "W 260cm \u00b7 D 160cm \u00b7 H 85cm",
+    "material": "Textured Chenille \u00b7 Kiln-Dried Wood \u00b7 40D Foam",
+    "features": [
+      "Two-tone modern aesthetic",
+      "Ergonomic lumbar support",
+      "Quick delivery in Guwahati"
+    ]
+  },
+  {
+    "id": 215,
+    "slug": "emerald-peak-velvet-corner-sectional",
+    "name": "Emerald Peak Velvet Corner Sectional",
+    "cat": "Sectionals",
+    "price": "\u20b955,000",
+    "priceNum": 55000,
+    "badge": "Luxury Velvet",
+    "rating": 5.0,
+    "reviews": 18,
+    "img": "images/lsofa/image.jpg",
+    "desc": "Jewel-tone emerald green velvet with deep vertical tufted backrests and warm gold brass-tipped legs. A showstopping centerpiece for designer living rooms.",
+    "dims": "W 275cm \u00b7 D 170cm \u00b7 H 86cm",
+    "material": "Heavyweight Emerald Velvet \u00b7 Solid Teak Wood \u00b7 Brass Leg Caps",
+    "features": [
+      "Vertical channel tufting",
+      "Brass leg accents",
+      "High-resilience foam core"
+    ]
+  },
+  {
+    "id": 301,
+    "slug": "sivasagar-solid-teak-3-seater",
+    "name": "Sivasagar Solid Teak 3-Seater Settee",
+    "cat": "Wooden Sofas",
+    "price": "\u20b934,500",
+    "priceNum": 34500,
+    "badge": "100% Teak",
+    "rating": 4.9,
+    "reviews": 31,
+    "img": "images/woodensofa/2223b117512a2b4decec1a5c0d5163e2.jpg",
+    "desc": "Clean geometric side lattice panels carved from 100% seasoned Assam teakwood. Fitted with high-density ivory cushioning and removable washable covers.",
+    "dims": "W 188cm \u00b7 D 78cm \u00b7 H 82cm \u00b7 Seat H 44cm",
+    "material": "Solid Assam Teakwood \u00b7 Honey Teak Polish \u00b7 40D High-Density Foam",
+    "features": [
+      "Artisan lattice side woodwork",
+      "Termite and borer resistant treatment",
+      "Washable cushion covers"
+    ]
+  },
+  {
+    "id": 302,
+    "slug": "tezpur-royal-carved-teak-sofa-set",
+    "name": "Tezpur Royal Carved Teakwood Living Suite",
+    "cat": "Wooden Sofas",
+    "price": "\u20b968,000",
+    "priceNum": 68000,
+    "badge": "Artisanal Carving",
+    "rating": 5.0,
+    "reviews": 24,
+    "img": "images/woodensofa/3cf5b908c9a37d5f5e02e8350d113a3e.jpg",
+    "desc": "Hand-chiseled floral cresting along the solid teak crown rail. Upholstered in regal gold-thread damask brocade with matching arm pads and lumbar pillows.",
+    "dims": "3-Seater: W 195cm \u00b7 D 82cm \u00b7 H 96cm (Set includes 3+1+1 options)",
+    "material": "Solid Teakwood \u00b7 Rich Walnut Luster \u00b7 Royal Brocade Fabric",
+    "features": [
+      "100% hand-carved floral crown",
+      "Heirloom mortise joinery",
+      "Complete living room set available"
+    ]
+  },
+  {
+    "id": 303,
+    "slug": "majuli-minimalist-teak-daybed-sofa",
+    "name": "Majuli Minimalist Teakwood Daybed Sofa",
+    "cat": "Wooden Sofas",
+    "price": "\u20b936,000",
+    "priceNum": 36000,
+    "badge": "Japandi Style",
+    "rating": 4.8,
+    "reviews": 19,
+    "img": "images/woodensofa/5a927d09f36add072c1d54006aa5ea5e.jpg",
+    "desc": "Scandinavian and Japandi inspired solid teak daybed sofa with vertical back slats, tapered legs, and natural oatmeal textured mattress cushion.",
+    "dims": "W 190cm \u00b7 D 82cm \u00b7 H 76cm \u00b7 Daybed depth 78cm",
+    "material": "Seasoned Teak \u00b7 Natural Matte Polyurethane Sealer \u00b7 Linen Blend",
+    "features": [
+      "Doubles as a comfortable guest daybed",
+      "Breathable open slatted frame",
+      "Removable cylinder bolster pillows"
+    ]
+  },
+  {
+    "id": 304,
+    "slug": "jorhat-sheesham-3-seater-sofa",
+    "name": "Jorhat Handcrafted Sheesham 3-Seater Sofa",
+    "cat": "Wooden Sofas",
+    "price": "\u20b932,000",
+    "priceNum": 32000,
+    "badge": "Solid Sheesham",
+    "rating": 4.9,
+    "reviews": 28,
+    "img": "images/woodensofa/5ca9e97f533e7b4d43a5add7da48e83c.jpg",
+    "desc": "Solid Indian rosewood (Sheesham) with prominent natural wood grain and rich walnut stain. Fitted with warm terracotta-toned high density seat & back cushions.",
+    "dims": "W 185cm \u00b7 D 76cm \u00b7 H 80cm",
+    "material": "Solid Indian Sheesham \u00b7 Dark Walnut Finish \u00b7 Heavy Poly-Weave Fabric",
+    "features": [
+      "Rich natural timber grain",
+      "Reinforced slatted base support",
+      "10-Year wood warranty against termites"
+    ]
+  },
+  {
+    "id": 305,
+    "slug": "darrang-classic-timber-box-sofa",
+    "name": "Darrang Classic Timber Box Sofa with Magazine Arm",
+    "cat": "Wooden Sofas",
+    "price": "\u20b929,500",
+    "priceNum": 29500,
+    "badge": "Practical Living",
+    "rating": 4.8,
+    "reviews": 35,
+    "img": "images/woodensofa/60a647e803c2db5282ddcc30ee6e2d88.jpg",
+    "desc": "Wide flat wooden armrests function as side ledges for tea cups, books, and laptops. Robust solid timber construction with grey textured cushions.",
+    "dims": "W 192cm \u00b7 D 80cm \u00b7 H 82cm \u00b7 Armrest W 18cm",
+    "material": "Solid Seasoned Hardwood \u00b7 Warm Teak Polish \u00b7 Durable Weave",
+    "features": [
+      "Extra-wide armrests for cups & remotes",
+      "Sturdy solid timber box construction",
+      "High density anti-sag foam"
+    ]
+  },
+  {
+    "id": 306,
+    "slug": "heritage-assam-teak-carved-3-seater",
+    "name": "Heritage Assam Teak Carved 3-Seater",
+    "cat": "Wooden Sofas",
+    "price": "\u20b942,000",
+    "priceNum": 42000,
+    "badge": "Heritage Collection",
+    "rating": 5.0,
+    "reviews": 22,
+    "img": "images/woodensofa/96559ad09e0273f7557159c197d07e48.jpg",
+    "desc": "Traditional Assamese woodcraft with carved decorative cresting along the backrest and apron. Warm golden-teak finish with supportive high-back cushions.",
+    "dims": "W 190cm \u00b7 D 80cm \u00b7 H 92cm",
+    "material": "100% Solid Assam Teakwood \u00b7 Honey Gloss Lacquer",
+    "features": [
+      "Traditional artisanal carvings",
+      "High-back ergonomic lumbar contouring",
+      "Heirloom piece made to last decades"
+    ]
+  },
+  {
+    "id": 307,
+    "slug": "ahom-royal-high-back-wooden-set",
+    "name": "Ahom Royal High-Back Carved Teakwood Sofa",
+    "cat": "Wooden Sofas",
+    "price": "\u20b946,000",
+    "priceNum": 46000,
+    "badge": "Royal Heritage",
+    "rating": 5.0,
+    "reviews": 17,
+    "img": "images/woodensofa/9cdb81a7810199c4f74fd133a1818d4d.jpg",
+    "desc": "Inspired by royal Ahom palace aesthetics, featuring tall turned spindles, floral crown cresting, and deep mahogany luster. Upholstered in rich printed velvet.",
+    "dims": "W 196cm \u00b7 D 84cm \u00b7 H 102cm \u00b7 Seat H 45cm",
+    "material": "Solid Teakwood \u00b7 Deep Mahogany Stain \u00b7 Patterned Velvet Upholstery",
+    "features": [
+      "Tall high-back royal silhouette",
+      "Master hand-carved accents",
+      "Matching single armchairs available"
+    ]
+  },
+  {
+    "id": 308,
+    "slug": "barpeta-traditional-slat-back-teak-sofa",
+    "name": "Barpeta Traditional Slat-Back Teak Sofa",
+    "cat": "Wooden Sofas",
+    "price": "\u20b931,500",
+    "priceNum": 31500,
+    "badge": "Best Value",
+    "rating": 4.7,
+    "reviews": 39,
+    "img": "images/woodensofa/aa367fbcb5102fe9337e971952df1253.jpg",
+    "desc": "Classic vertical timber slats across the back and sides, finished in a smooth natural teak polish. Comes with navy blue high-resilience foam seat & back pillows.",
+    "dims": "W 185cm \u00b7 D 76cm \u00b7 H 80cm",
+    "material": "Solid Teak Hardwood \u00b7 Natural Teak Polish \u00b7 Poly-Cotton Fabric",
+    "features": [
+      "Timeless vertical slat geometry",
+      "Washable zipped cushion covers",
+      "Termite-treated seasoned wood"
+    ]
+  },
+  {
+    "id": 309,
+    "slug": "golaghat-natural-teak-wood-lounger",
+    "name": "Golaghat Natural Teak Wood Lounger Sofa",
+    "cat": "Wooden Sofas",
+    "price": "\u20b935,000",
+    "priceNum": 35000,
+    "badge": "Deep Seating",
+    "rating": 4.9,
+    "reviews": 21,
+    "img": "images/woodensofa/d0c2882cd15582c76fd646bfb87c3668.jpg",
+    "desc": "Showcasing the golden grain of first-grade Assam teak with rounded smooth edges and deep seating. Fitted with sage green textured fabric cushions.",
+    "dims": "W 190cm \u00b7 D 82cm \u00b7 H 80cm \u00b7 Seat D 65cm",
+    "material": "Grade-A Assam Teakwood \u00b7 Natural Clear Polish \u00b7 Sage Green Fabric",
+    "features": [
+      "Extra-deep relaxation seat depth",
+      "Silky hand-sanded curved edges",
+      "Sag-proof support frame"
+    ]
+  },
+  {
+    "id": 310,
+    "slug": "cachar-carved-living-room-suite",
+    "name": "Cachar Carved Living Room Settee",
+    "cat": "Wooden Sofas",
+    "price": "\u20b948,000",
+    "priceNum": 48000,
+    "badge": "Artisan Handcraft",
+    "rating": 4.8,
+    "reviews": 15,
+    "img": "images/woodensofa/d3079166b5c194291978399a02816478.jpg",
+    "desc": "Chiseled floral flourishes, carved cabriole legs, and sweeping rolled arm rests. Finished in dark antique walnut with opulent jacquard brocade cushioning.",
+    "dims": "W 192cm \u00b7 D 82cm \u00b7 H 94cm",
+    "material": "Seasoned Teakwood \u00b7 Antique Walnut Polish \u00b7 Jacquard Brocade",
+    "features": [
+      "Carved French cabriole legs",
+      "Hand-padded upholstered armrests",
+      "Customizable polish & fabrics"
+    ]
+  },
+  {
+    "id": 311,
+    "slug": "nagaon-mid-century-solid-sheesham-sofa",
+    "name": "Nagaon Mid-Century Solid Sheesham Sofa",
+    "cat": "Wooden Sofas",
+    "price": "\u20b933,000",
+    "priceNum": 33000,
+    "badge": "Mid-Century",
+    "rating": 4.8,
+    "reviews": 26,
+    "img": "images/woodensofa/f30ae6a4bc4c457afeb28a6e27d28a10.jpg",
+    "desc": "Angled wooden arms, round tapered dowel legs, and clean minimalist lines. Made from seasoned Sheesham wood with warm charcoal grey cushion pads.",
+    "dims": "W 182cm \u00b7 D 76cm \u00b7 H 78cm",
+    "material": "Solid Indian Sheesham \u00b7 Satin Walnut Lacquer \u00b7 40D Foam",
+    "features": [
+      "Mid-Century Modern angled profile",
+      "Compact footprint for modern living",
+      "Durable high-density foam"
+    ]
+  },
+  {
+    "id": 401,
+    "slug": "elysian-blush-pink-tub-lounge-chair",
+    "name": "Elysian Blush Velvet Tub Lounge Chair",
+    "cat": "Accent",
+    "price": "\u20b921,500",
+    "priceNum": 21500,
+    "badge": "Luxe Velvet",
+    "rating": 4.9,
+    "reviews": 32,
+    "img": "images/singlechair/5d54248074aaac490842264668b74d3d.jpg",
+    "desc": "Rounded barrel-tub armchair upholstered in blush rose velvet with a circular brushed brass base plinth. Swivels gracefully into any cozy reading nook.",
+    "dims": "W 78cm \u00b7 D 76cm \u00b7 H 78cm \u00b7 Seat H 45cm",
+    "material": "Dusty Rose Velvet \u00b7 Brass Swivel Plinth \u00b7 High Resilience 40D Foam",
+    "features": [
+      "Smooth 360-degree brass swivel base",
+      "Barrel bucket backrest",
+      "Stain-resistant velvet finish"
+    ]
+  },
+  {
+    "id": 402,
+    "slug": "victoria-royal-carved-accent-chair",
+    "name": "Victoria Royal Carved Accent Chair",
+    "cat": "Accent",
+    "price": "\u20b923,000",
+    "priceNum": 23000,
+    "badge": "Antique Style",
+    "rating": 4.8,
+    "reviews": 18,
+    "img": "images/singlechair/7330890bdd2f8130113c24e0a4736a46.jpg",
+    "desc": "French Neoclassical inspired armchair featuring hand-carved floral cabriole legs and antiqued woodwork. Padded with damask brocade upholstery.",
+    "dims": "W 74cm \u00b7 D 76cm \u00b7 H 98cm \u00b7 Seat H 48cm",
+    "material": "Solid Hardwood Frame \u00b7 Antique Distressed Polish \u00b7 Damask Fabric",
+    "features": [
+      "Hand-carved acanthus leaf motifs",
+      "Plush feather-touch seat cushion",
+      "Classic parlor statement piece"
+    ]
+  },
+  {
+    "id": 403,
+    "slug": "riviera-mustard-yellow-velvet-club-chair",
+    "name": "Riviera Fluted Club Chair \u2014 Mustard Gold",
+    "cat": "Accent",
+    "price": "\u20b919,800",
+    "priceNum": 19800,
+    "badge": "Statement Color",
+    "rating": 4.9,
+    "reviews": 41,
+    "img": "images/singlechair/B612_20220902_203507_814.jpg",
+    "desc": "Striking mustard gold velvet club armchair featuring bold vertical channel stitching along the backrest, set on tapered dark-wood legs.",
+    "dims": "W 80cm \u00b7 D 78cm \u00b7 H 84cm \u00b7 Seat H 46cm",
+    "material": "Mustard Velvet \u00b7 Solid Wood Legs \u00b7 40D Foam",
+    "features": [
+      "Deep vertical channel tufting",
+      "Stain-resistant upholstery",
+      "Floor protection feet"
+    ]
+  },
+  {
+    "id": 404,
+    "slug": "brahmaputra-workshop-single-reading-chair",
+    "name": "Brahmaputra Workshop High-Back Reading Chair",
+    "cat": "Accent",
+    "price": "\u20b918,500",
+    "priceNum": 18500,
+    "badge": "Workshop Craft",
+    "rating": 4.7,
+    "reviews": 24,
+    "img": "images/singlechair/IMG-20210518-WA0005.jpg",
+    "desc": "Custom crafted on our Guwahati workshop floor: generous pillow-padded armrests with extra deep cushioning, engineered for hours of reading comfort.",
+    "dims": "W 84cm \u00b7 D 86cm \u00b7 H 96cm",
+    "material": "Textured Earth Weave \u00b7 Hardwood Salwood Structure \u00b7 Heavy-Duty Springs",
+    "features": [
+      "Deep relaxation seat angle",
+      "Padded pillow-top armrests",
+      "Direct from Guwahati workshop"
+    ]
+  },
+  {
+    "id": 405,
+    "slug": "florence-high-back-tufted-reading-chair",
+    "name": "Florence Diamond-Tufted Reading Chair",
+    "cat": "Wingback",
+    "price": "\u20b922,500",
+    "priceNum": 22500,
+    "badge": "Hand Tufted",
+    "rating": 4.9,
+    "reviews": 29,
+    "img": "images/singlechair/IMG-20210914-WA0001.jpg",
+    "desc": "Tall diamond button-tufted backrest with flared wingtips and rolled arms. Upholstered in a durable grey-oatmeal woven blend on dark turned legs.",
+    "dims": "W 82cm \u00b7 D 86cm \u00b7 H 106cm \u00b7 Seat H 48cm",
+    "material": "Oatmeal Tweed Weave \u00b7 Solid Teak Legs \u00b7 Deep Button Tufting",
+    "features": [
+      "Ergonomic tall headrest support",
+      "Deep hand-tied diamond tufting",
+      "Solid timber turned legs"
+    ]
+  },
+  {
+    "id": 406,
+    "slug": "regent-mid-century-teak-armchair",
+    "name": "Regent Sculpted Teak Lounge Armchair",
+    "cat": "Accent",
+    "price": "\u20b920,500",
+    "priceNum": 20500,
+    "badge": "Solid Teak",
+    "rating": 5.0,
+    "reviews": 37,
+    "img": "images/singlechair/IMG_20220418_184149_490.jpg",
+    "desc": "Sculpted solid teakwood arms that feel silky smooth to the touch. Fitted with olive green textured linen-blend cushions for timeless mid-century warmth.",
+    "dims": "W 76cm \u00b7 D 80cm \u00b7 H 82cm \u00b7 Seat H 44cm",
+    "material": "Hand-Carved Solid Assam Teak \u00b7 Olive Linen Fabric \u00b7 Natural Wax Finish",
+    "features": [
+      "Organic sculpted wooden arms",
+      "Exposed joinery detailing",
+      "Removable cushion covers"
+    ]
+  },
+  {
+    "id": 407,
+    "slug": "cleo-scalloped-velvet-accent-chair",
+    "name": "Cleo Scalloped Shell Velvet Accent Chair",
+    "cat": "Accent",
+    "price": "\u20b917,500",
+    "priceNum": 17500,
+    "badge": "Glam Design",
+    "rating": 4.9,
+    "reviews": 48,
+    "img": "images/singlechair/chairs_0f09d7e5-17eb-41a5-86d0-a6c2556dbd9a_600x.jpg",
+    "desc": "Glamorous scalloped seashell-back silhouette upholstered in plush velvet on slim splayed gold brass hairpin legs. Perfect for vanity tables or living room corners.",
+    "dims": "W 76cm \u00b7 D 74cm \u00b7 H 82cm \u00b7 Seat H 46cm",
+    "material": "Plush Velvet \u00b7 Gold Electroplated Steel Legs \u00b7 40D Foam",
+    "features": [
+      "Scalloped seashell back design",
+      "Brushed gold metal legs",
+      "Available in blush, emerald & navy"
+    ]
+  },
+  {
+    "id": 408,
+    "slug": "oslo-modern-boucle-lounge-chair",
+    "name": "Oslo Modern Boucl\u00e9 Lounge Chair",
+    "cat": "Accent",
+    "price": "\u20b919,000",
+    "priceNum": 19000,
+    "badge": "Cozy Boucl\u00e9",
+    "rating": 4.8,
+    "reviews": 33,
+    "img": "images/singlechair/homedecor_2e182883-9ea9-4bda-82c1-85f3fa91286c_600x.jpg",
+    "desc": "Upholstered in rich textured ivory boucl\u00e9 (curly wool-feel) on a minimalist architectural matte-black iron frame. Cloud-like softness meets clean modern design.",
+    "dims": "W 74cm \u00b7 D 78cm \u00b7 H 80cm \u00b7 Seat H 45cm",
+    "material": "Heavyweight Ivory Boucl\u00e9 \u00b7 Matte Black Powder-Coated Metal",
+    "features": [
+      "Tactile textured boucl\u00e9 fabric",
+      "Sleek architectural steel frame",
+      "Ultra-comfortable pocket foam"
+    ]
+  },
+  {
+    "id": 409,
+    "slug": "solstice-tufted-occasional-chair",
+    "name": "Solstice Tufted Occasional Chair \u2014 Amber",
+    "cat": "Accent",
+    "price": "\u20b916,500",
+    "priceNum": 16500,
+    "badge": "Compact Comfort",
+    "rating": 4.7,
+    "reviews": 20,
+    "img": "images/singlechair/image_1.jpg",
+    "desc": "Warm amber fabric with subtle button-tufting, curved wooden arms, and compact proportions that fit effortlessly into study rooms, bedrooms, or waiting areas.",
+    "dims": "W 70cm \u00b7 D 72cm \u00b7 H 78cm",
+    "material": "Amber Woven Fabric \u00b7 Solid Teak Frame \u00b7 High Density Foam",
+    "features": [
+      "Ergonomic lumbar slope",
+      "Space-saving footprint",
+      "Durable stain-resistant upholstery"
+    ]
+  },
+  {
+    "id": 501,
+    "slug": "bellamy-tufted-dining-chair-ivory",
+    "name": "Bellamy Tufted Dining Chair \u2014 Ivory (Pair)",
+    "cat": "Dining",
+    "price": "\u20b98,500",
+    "priceNum": 8500,
+    "badge": "Sold in Pairs",
+    "rating": 4.9,
+    "reviews": 56,
+    "img": "images/original_site/prod_1_bellamy_tufted_dining_chair_ivory.jpeg",
+    "desc": "Button-tufted back with nailhead trim, set on turned oak legs. Sold as a pair, upholstered in a wipeable linen-blend fabric designed for daily dining.",
+    "dims": "Sold in pairs \u00b7 W 56cm \u00b7 D 64cm \u00b7 H 104cm",
+    "material": "Wipeable Linen-Blend \u00b7 Turned Oak Legs \u00b7 Brass Nailheads",
+    "features": [
+      "Button-tufted backrest",
+      "Antiqued brass nailhead trim",
+      "Reinforced corner block frame"
+    ]
+  },
+  {
+    "id": 502,
+    "slug": "bellamy-tufted-dining-chair-grey",
+    "name": "Bellamy Tufted Dining Chair \u2014 Grey (Pair)",
+    "cat": "Dining",
+    "price": "\u20b98,500",
+    "priceNum": 8500,
+    "badge": "Sold in Pairs",
+    "rating": 4.9,
+    "reviews": 49,
+    "img": "images/original_site/prod_2_bellamy_tufted_dining_chair_grey.jpeg",
+    "desc": "The same button-tufted silhouette as our Ivory Bellamy, in a deeper charcoal-grey weave for darker dining settings. Sold as a pair.",
+    "dims": "Sold in pairs \u00b7 W 56cm \u00b7 D 64cm \u00b7 H 104cm",
+    "material": "Charcoal Weave \u00b7 Turned Dark Oak Legs \u00b7 Pewter Nailheads",
+    "features": [
+      "Stain-forgiving charcoal weave",
+      "Deep button tufting",
+      "High-density foam cushion"
+    ]
+  },
+  {
+    "id": 503,
+    "slug": "rosalind-channel-back-armchair",
+    "name": "Rosalind Channel-Back Armchair (Pair)",
+    "cat": "Accent",
+    "price": "\u20b924,000",
+    "priceNum": 24000,
+    "badge": "Sold in Pairs",
+    "rating": 5.0,
+    "reviews": 38,
+    "img": "images/original_site/prod_3_rosalind_channel_back_armchair.jpeg",
+    "desc": "Channel-tufted blush velvet on slim brass legs \u2014 a statement chair for a living room or reading corner. Sold as a pair for symmetrical salon seating.",
+    "dims": "Sold in pairs \u00b7 W 78cm \u00b7 D 80cm \u00b7 H 96cm",
+    "material": "Blush Velvet \u00b7 Electroplated Brass Legs \u00b7 40D Foam",
+    "features": [
+      "Channel-tufted backrest",
+      "Slim brass legs",
+      "Sold as a matching pair"
+    ]
+  },
+  {
+    "id": 504,
+    "slug": "ember-round-lounge-chair",
+    "name": "Ember Round Lounge Chair \u2014 Teakwood",
+    "cat": "Accent",
+    "price": "\u20b919,500",
+    "priceNum": 19500,
+    "badge": "Solid Teak",
+    "rating": 4.8,
+    "reviews": 29,
+    "img": "images/original_site/prod_4_ember_round_lounge_chair.jpeg",
+    "desc": "A solid teak frame wraps a low, round cushioned seat. Comfortable as a single accent piece or paired with our matching teakwood side table.",
+    "dims": "W 72cm \u00b7 D 72cm \u00b7 H 68cm \u00b7 Seat H 42cm",
+    "material": "Solid Teak Frame \u00b7 Round Foam Cushion \u00b7 Clear Natural Teak Wax",
+    "features": [
+      "Continuous steam-bent teak frame",
+      "360 round cushion comfort",
+      "Warm natural grain finish"
+    ]
+  },
+  {
+    "id": 505,
+    "slug": "meadow-floral-wingback-ottoman",
+    "name": "Meadow Floral Wingback + Matching Ottoman",
+    "cat": "Wingback",
+    "price": "\u20b927,000",
+    "priceNum": 27000,
+    "badge": "Ottoman Included",
+    "rating": 5.0,
+    "reviews": 45,
+    "img": "images/original_site/prod_5_meadow_floral_wingback_ottoman.jpeg",
+    "desc": "A tall wingback silhouette in hand-printed botanical floral fabric, paired with a matching footstool ottoman. Solid wood legs in a walnut finish.",
+    "dims": "Chair W 84cm \u00b7 D 90cm \u00b7 H 112cm \u00b7 Ottoman 56x44cm",
+    "material": "Hand-Printed Floral Fabric \u00b7 Solid Timber Legs \u00b7 High Back Support",
+    "features": [
+      "Includes matching cushioned footstool ottoman",
+      "Supportive wingback headrest",
+      "Handcrafted walnut turned legs"
+    ]
+  },
+  {
+    "id": 506,
+    "slug": "willow-velvet-armchair",
+    "name": "Willow Sage Velvet Armchair",
+    "cat": "Accent",
+    "price": "\u20b922,000",
+    "priceNum": 22000,
+    "badge": "Bestseller",
+    "rating": 4.9,
+    "reviews": 42,
+    "img": "images/original_site/prod_6_willow_velvet_armchair.jpeg",
+    "desc": "A relaxed, low-arm silhouette in sage velvet with a loose scatter cushion. Tapered wood legs in a rich walnut finish.",
+    "dims": "W 90cm \u00b7 D 88cm \u00b7 H 84cm",
+    "material": "Sage Green Velvet \u00b7 Tapered Walnut Legs \u00b7 Loose Scatter Cushion",
+    "features": [
+      "Low-arm relaxed lounge profile",
+      "Loose scatter cushion included",
+      "Soft-touch velvet upholstery"
+    ]
+  },
+  {
+    "id": 507,
+    "slug": "harlow-barrel-chair-ottoman",
+    "name": "Harlow Barrel Chair + Matching Ottoman",
+    "cat": "Wingback",
+    "price": "\u20b918,500",
+    "priceNum": 18500,
+    "badge": "Ottoman Included",
+    "rating": 4.8,
+    "reviews": 31,
+    "img": "images/original_site/prod_7_harlow_barrel_chair_ottoman.jpeg",
+    "desc": "A rounded barrel-back chair in a warm geometric trellis pattern, with a matching footstool ottoman. Compact enough for cozy living rooms and bay windows.",
+    "dims": "Chair W 76cm \u00b7 D 72cm \u00b7 H 78cm \u00b7 Ottoman 52x40cm",
+    "material": "Trellis Pattern Jacquard \u00b7 Hardwood Core \u00b7 40D Foam",
+    "features": [
+      "Matching footstool ottoman included",
+      "Space-efficient barrel back",
+      "Supportive wrap-around cushioning"
+    ]
+  },
+  {
+    "id": 508,
+    "slug": "camden-tufted-wingback",
+    "name": "Camden Tufted Wingback Armchair",
+    "cat": "Wingback",
+    "price": "\u20b921,000",
+    "priceNum": 21000,
+    "badge": "Classic Wingback",
+    "rating": 4.9,
+    "reviews": 37,
+    "img": "images/original_site/prod_8_camden_tufted_wingback.jpeg",
+    "desc": "A classic button-tufted wingback in a textured cream weave, featuring rolled arms, brass studs, and turned wood legs.",
+    "dims": "W 82cm \u00b7 D 86cm \u00b7 H 108cm",
+    "material": "Textured Cream Weave \u00b7 Turned Hardwood Legs \u00b7 High Density Core",
+    "features": [
+      "Diamond button-tufted back",
+      "Classic English rolled arms",
+      "Turned wooden legs"
+    ]
+  },
+  {
+    "id": 509,
+    "slug": "dalton-wingback-chair",
+    "name": "Dalton Modern Wingback Chair \u2014 Slate Grey",
+    "cat": "Wingback",
+    "price": "\u20b923,500",
+    "priceNum": 23500,
+    "badge": "Modern Wingback",
+    "rating": 4.8,
+    "reviews": 33,
+    "img": "images/original_site/prod_9_dalton_wingback_chair.jpeg",
+    "desc": "A cleaner, more modern take on the traditional wingback \u2014 angular lines in a soft grey weave, on tapered dark-wood legs.",
+    "dims": "W 80cm \u00b7 D 88cm \u00b7 H 104cm",
+    "material": "Soft Grey Weave \u00b7 Tapered Dark Wood Legs \u00b7 Lumbar Contouring",
+    "features": [
+      "Modern angular wing profile",
+      "High-resilience foam core",
+      "Supportive posture slope"
+    ]
+  }
+]

@@ -1,0 +1,40 @@
+// Furniture8home backend: the shop API (/api/*), uploaded photos (/media/*) and the admin
+// dashboard (everything else), all from one Worker. The storefront is hosted on Vercel.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "furniture8home-backend",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "build": {
+    // Builds the admin dashboard into admin/dist
+    "command": "npm run build",
+    "watch_dir": ["admin/src"]
+  },
+  "assets": {
+    "directory": "./admin/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/media/*"]
+  },
+  "d1_databases": [
+    {
+      // No database_id: Wrangler creates the database on the first deploy.
+      // The Worker creates its tables and loads the starter catalog on first use.
+      "binding": "DB",
+      "database_name": "furniture8home"
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "production",
+    // Sites allowed to call the public API, comma-separated (your Vercel domain(s))
+    "STOREFRONT_ORIGIN": "https://furniture8home.com,https://www.furniture8home.com"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // Secrets (set with `npx wrangler secret put NAME`, or in the Cloudflare dashboard):
+  //   ADMIN_PIN                 6–8 digits, required to log in to the admin dashboard
+  //   RAZORPAY_KEY_ID           \  online payment is hidden at checkout
+  //   RAZORPAY_KEY_SECRET       /  until both are set
+  //   RAZORPAY_WEBHOOK_SECRET   optional, for https://<backend>/api/razorpay/webhook
+}

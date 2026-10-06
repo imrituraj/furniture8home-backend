@@ -1,0 +1,7 @@
+[
+  { "id": "Sectionals", "name": "L-Sectionals", "nameAs": "L-চেকচনেল", "img": "images/lsofa/0e06df108cba5f38f4c09e7d95643405.jpg", "chaise": true },
+  { "id": "Wooden Sofas", "name": "Wooden Sofas", "nameAs": "কাঠৰ চোফা", "img": "images/woodensofa/2223b117512a2b4decec1a5c0d5163e2.jpg" },
+  { "id": "Accent", "name": "Accent Chairs", "nameAs": "একচেণ্ট চীট", "img": "images/singlechair/5d54248074aaac490842264668b74d3d.jpg" },
+  { "id": "Dining", "name": "Dining Chairs", "nameAs": "ডাইনিং চীট", "img": "images/chairs/B612_20221205_111922_652.jpg" },
+  { "id": "Wingback", "name": "Wingbacks & Ottomans", "nameAs": "উইংবেক আৰু অটমান", "img": "images/original_site/prod_5_meadow_floral_wingback_ottoman.jpeg" }
+]

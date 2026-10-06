@@ -1,0 +1,176 @@
+/* =========================================================
+   FURNITURE8HOME — STOREFRONT
+   Warm linen + deep forest + cognac teak.
+   Token names are shared with admin.css; keep them stable.
+   ========================================================= */
+
+:root {
+  --bg: #F5F0E8;
+  --surface: #FFFDF9;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #ECE5D9;
+  --ink: #1D1A16;
+  --ink-secondary: #4E473F;
+  --ink-muted: #7F7568;
+  --line: #E2D9CA;
+  --line-dark: #CEC2AE;
+  --brand-sage: #2E3B2B;
+  --brand-sage-hover: #222D20;
+  --brand-sage-light: #E4EBDD;
+  --brand-brass: #A86A32;
+  --brand-brass-hover: #8E5626;
+  --brand-brass-light: #F5E8D9;
+  --danger: #B4432F;
+  --wa: #1FAF5A;
+  --wa-hover: #17944B;
+  --on-brand: #FFFDF9;
+  --band: #26312A;
+  --band-ink: #F3EEE6;
+  --band-muted: #B9C2B1;
+  --band-line: rgba(243, 238, 230, 0.14);
+  --shadow-sm: 0 1px 2px rgba(29, 26, 22, 0.05), 0 2px 8px rgba(29, 26, 22, 0.04);
+  --shadow-md: 0 14px 30px -14px rgba(29, 26, 22, 0.16), 0 4px 10px -4px rgba(29, 26, 22, 0.05);
+  --shadow-lg: 0 30px 60px -20px rgba(29, 26, 22, 0.28), 0 10px 24px -8px rgba(29, 26, 22, 0.08);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 9999px;
+  --header-h: 68px;
+  --font-serif: 'Fraunces', Georgia, 'Noto Serif Bengali', serif;
+  --font-sans: 'Manrope', system-ui, -apple-system, 'Noto Sans Bengali', sans-serif;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #12110F;
+  --surface: #1A1815;
+  --surface-card: #201D19;
+  --surface-subtle: #2A2620;
+  --ink: #F3EEE6;
+  --ink-secondary: #CFC6B8;
+  --ink-muted: #9C9283;
+  --line: #322D26;
+  --line-dark: #463F35;
+  --brand-sage: #9DBB8C;
+  --brand-sage-hover: #B2CDA2;
+  --brand-sage-light: #1F2A1B;
+  --brand-brass: #D9A06A;
+  --brand-brass-hover: #E6B686;
+  --brand-brass-light: #2E2216;
+  --danger: #E07A63;
+  --on-brand: #12110F;
+  --band: #1B2219;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 14px 30px -14px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 30px 60px -20px rgba(0, 0, 0, 0.75);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12110F;
+    --surface: #1A1815;
+    --surface-card: #201D19;
+    --surface-subtle: #2A2620;
+    --ink: #F3EEE6;
+    --ink-secondary: #CFC6B8;
+    --ink-muted: #9C9283;
+    --line: #322D26;
+    --line-dark: #463F35;
+    --brand-sage: #9DBB8C;
+    --brand-sage-hover: #B2CDA2;
+    --brand-sage-light: #1F2A1B;
+    --brand-brass: #D9A06A;
+    --brand-brass-hover: #E6B686;
+    --brand-brass-light: #2E2216;
+    --danger: #E07A63;
+    --on-brand: #12110F;
+    --band: #1B2219;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 14px 30px -14px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 30px 60px -20px rgba(0, 0, 0, 0.75);
+    color-scheme: dark;
+  }
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 12px); -webkit-text-size-adjust: 100%; }
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+html[lang="as"] body { font-family: 'Noto Sans Bengali', var(--font-sans); }
+html[lang="as"] h1, html[lang="as"] h2, html[lang="as"] h3 { font-family: 'Noto Serif Bengali', var(--font-serif); letter-spacing: 0; }
+
+h1, h2, h3, h4 { font-family: var(--font-serif); font-weight: 500; letter-spacing: -0.02em; line-height: 1.15; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+img { max-width: 100%; height: auto; display: block; }
+ul, ol { list-style: none; }
+::selection { background: var(--brand-brass); color: var(--on-brand); }
+:focus-visible { outline: 2px solid var(--brand-brass); outline-offset: 3px; border-radius: 6px; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-brass);
+  margin-bottom: 14px;
+}
+.eyebrow::before { content: ''; width: 22px; height: 1.5px; background: currentColor; }
+.eyebrow--light { color: #E2B486; }
+
+.section-title { font-size: clamp(30px, 4vw, 46px); color: var(--ink); }
+.section-desc { color: var(--ink-secondary); font-size: 16px; max-width: 460px; }
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px 48px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+.section-head--center { flex-direction: column; align-items: center; text-align: center; }
+.section-head--center .eyebrow::after { content: ''; width: 22px; height: 1.5px; background: currentColor; }
+
+/* ---------- Buttons ---------- */
+.btn-primary, .btn-secondary, .btn-wa, .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border-radius: var(--radius-full);
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background-color 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.btn-primary { background: var(--brand-sage); color: var(--on-brand); }
+.btn-primary:hover { background: var(--brand-sage-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line-dark); }
+.btn-secondary:hover { border-color: var(--ink); }
+.btn-secondary.is-saved, .btn-secondary.is-copied { color: var(--brand-brass); border-color: var(--brand-brass); }
+.btn-wa { background: var(--wa); color: #fff; }
+.btn-wa:hover { background: var(--wa-hover); transform: translateY(-1px); box-shadow: 0 12px 24px -12px rgba(31, 175, 90, 0.7); }
+.btn-ghost { color: var(--band-ink); border: 1px solid var(--band-line); }
+.btn-ghost:hover { border-color: var(--band-ink); }
+.btn-lg { padding: 14px 24px; font-size: 15px; }
+.btn-block { width: 100%; }
