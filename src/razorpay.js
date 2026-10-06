@@ -47,6 +47,13 @@ export async function fetchPayment(config, paymentId) {
 }
 
 export async function verifyWebhookSignature(config, rawBody, signature) {
-  if (!(rawBody instanceof ArrayBuffer) || rawBody.byteLength === 0) return false;
-  return safeEqual(await hmacSha256Hex(config.webhookSecret, rawBody), signature || '');
+  // Accept the raw body as an ArrayBuffer or a byte view; refuse empty bodies and a missing secret
+  let bytes;
+  try {
+    bytes = ArrayBuffer.isView(rawBody) ? rawBody : new Uint8Array(rawBody);
+  } catch {
+    return false;
+  }
+  if (bytes.byteLength === 0 || typeof signature !== 'string' || !config.webhookSecret) return false;
+  return safeEqual(await hmacSha256Hex(config.webhookSecret, bytes), signature.trim());
 }
