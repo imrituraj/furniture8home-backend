@@ -1,6 +1,7 @@
 import { ValidationError, randomHex, safeEqual } from './util.js';
 import { formatPrice, getCatalog, text } from './catalog.js';
 import { getCategories } from './categories.js';
+import { isEmail } from './mail.js';
 
 export const PAYMENT_METHODS = ['razorpay', 'offline', 'whatsapp'];
 export const ORDER_STATUSES = ['new', 'confirmed', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -17,6 +18,11 @@ const CHAISE_OPTIONS = ['Right Facing Chaise', 'Left Facing Chaise', 'Custom Mea
 function cleanText(value, max = 200) {
   // Strip control characters (keep newlines in addresses/notes)
   return text(value, 10_000).replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, '').trim().slice(0, max);
+}
+
+// Names, phones, emails and PIN codes are one line: no control characters at all
+function singleLine(value, max) {
+  return text(value, 10_000).replace(/[\u0000-\u001F\u007F\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
 function newOrderId() {
@@ -66,17 +72,17 @@ export async function buildOrder(db, body) {
     });
   }
 
-  const name = cleanText(customer.name, 80);
-  const phone = cleanText(customer.phone, 20).replace(/[^\d+]/g, '');
+  const name = singleLine(customer.name, 80);
+  const phone = singleLine(customer.phone, 20).replace(/[^\d+]/g, '');
   if (!name) throw new ValidationError('Please enter your name');
   if (!/^(\+?91)?[6-9]\d{9}$/.test(phone)) throw new ValidationError('Please enter a valid 10-digit mobile number');
 
-  const email = cleanText(customer.email, 120);
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new ValidationError('Please enter a valid email address');
+  const email = singleLine(customer.email, 120);
+  if (email && !isEmail(email)) throw new ValidationError('Please enter a valid email address');
 
   const type = fulfilment.type === 'pickup' ? 'pickup' : 'delivery';
   const address = cleanText(customer.address, 400);
-  const pincode = cleanText(customer.pincode, 6);
+  const pincode = singleLine(customer.pincode, 6);
   if (type === 'delivery') {
     if (!address) throw new ValidationError('Please enter your delivery address');
     if (!/^\d{6}$/.test(pincode)) throw new ValidationError('Please enter a valid 6-digit PIN code');

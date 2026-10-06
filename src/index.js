@@ -34,9 +34,17 @@ import { createRazorpayOrder, fetchPayment, razorpayConfig, verifyPaymentSignatu
 import { addHit, adminEmail, adminPin, createSession, credentialsMatch, endSession, hits, requireAdmin } from './auth.js';
 import { serveMedia } from './media.js';
 import { ensureSeeded, resetCatalog } from './seed.js';
-import { NOTIFY_STATUSES, deliver, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
+import { NOTIFY_STATUSES, deliver, loginAlertEmail, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
 
 const PUBLIC_BODY_LIMIT = 20_000;
+const WEBHOOK_BODY_LIMIT = 1_000_000;
+
+// Order flood limits: per device, per phone number, and for the whole shop
+const ORDER_LIMITS = [
+  { key: (ip) => `orders:${ip}`, max: 15, windowMs: 10 * 60 * 1000, message: 'Too many orders from this device. Please call or WhatsApp us.' },
+  { key: () => 'orders:*', max: 60, windowMs: 60 * 60 * 1000, message: 'We are receiving a lot of orders right now. Please try again shortly, or WhatsApp us.' },
+];
+const ORDERS_PER_PHONE_PER_DAY = 10;
 const ADMIN_BODY_LIMIT = 3_000_000; // photos are resized in the admin before upload
 
 // ---------- Payments ----------
@@ -64,13 +72,18 @@ function paymentMatchesOrder(payment, order) {
 
 async function placeOrder(request, env, ctx) {
   const db = env.DB;
-  const ipKey = `orders:${clientIp(request)}`;
-  if ((await hits(db, ipKey)) >= 15) {
-    throw new HttpError(429, 'Too many orders from this device. Please call or WhatsApp us.');
+  const ip = clientIp(request);
+  for (const limit of ORDER_LIMITS) {
+    if ((await hits(db, limit.key(ip))) >= limit.max) throw new HttpError(429, limit.message);
   }
-  await addHit(db, ipKey, 10 * 60 * 1000).run();
+  await db.batch(ORDER_LIMITS.map((limit) => addHit(db, limit.key(ip), limit.windowMs)));
 
   const order = await buildOrder(db, await readJson(request, PUBLIC_BODY_LIMIT));
+  const phoneKey = `orders:phone:${order.customer.phone.slice(-10)}`;
+  if ((await hits(db, phoneKey)) >= ORDERS_PER_PHONE_PER_DAY) {
+    throw new HttpError(429, 'Too many orders for this phone number today. Please call or WhatsApp us.');
+  }
+  await addHit(db, phoneKey, 24 * 60 * 60 * 1000).run();
   const rzp = razorpayConfig(env);
 
   if (order.paymentMethod === 'razorpay') {
@@ -138,7 +151,9 @@ async function paymentFailed(request, env, id) {
 async function razorpayWebhook(request, env, ctx) {
   const rzp = razorpayConfig(env);
   if (!rzp.webhookSecret) return new Response('Not found', { status: 404 });
+  if (Number(request.headers.get('content-length') || 0) > WEBHOOK_BODY_LIMIT) return json({ error: 'Request is too large' }, 413);
   const raw = await request.arrayBuffer();
+  if (raw.byteLength > WEBHOOK_BODY_LIMIT) return json({ error: 'Request is too large' }, 413);
   if (!(await verifyWebhookSignature(rzp, raw, request.headers.get('x-razorpay-signature')))) {
     return json({ error: 'Invalid signature' }, 400);
   }
@@ -154,7 +169,12 @@ async function razorpayWebhook(request, env, ctx) {
   const order = typeof rzpOrderId === 'string' ? await findOrderByRazorpayId(env.DB, rzpOrderId) : null;
 
   if (order && (event.event === 'order.paid' || event.event === 'payment.captured')) {
-    if (!payment || paymentMatchesOrder(payment, order)) await markPaid(env, ctx, order, payment?.id);
+    // Check the amount whichever entity the event carries
+    const rzpOrder = event.payload?.order?.entity;
+    const amountOk = payment
+      ? paymentMatchesOrder(payment, order)
+      : rzpOrder?.id === order.razorpay?.orderId && rzpOrder?.amount_paid === order.total * 100 && rzpOrder?.currency === 'INR';
+    if (amountOk) await markPaid(env, ctx, order, payment?.id);
     else console.warn(`Webhook payment for ${order.id} does not match the order amount — not marking paid`);
   } else if (order && event.event === 'payment.failed' && order.paymentStatus === 'pending') {
     await updateOrder(env.DB, order.id, { paymentStatus: 'failed' });
@@ -164,7 +184,7 @@ async function razorpayWebhook(request, env, ctx) {
 
 // ---------- Admin ----------
 
-async function login(request, env) {
+async function login(request, env, ctx) {
   const db = env.DB;
   if (!adminPin(env) || !adminEmail(env)) {
     throw new HttpError(503, 'Admin login is not set up yet. Set ADMIN_EMAIL and a 6–8 digit ADMIN_PIN for the Worker.');
@@ -178,6 +198,18 @@ async function login(request, env) {
   if (!(await credentialsMatch(env, body?.email, body?.pin))) {
     const window = 15 * 60 * 1000;
     await db.batch([addHit(db, ipKey, window), addHit(db, 'login:*', window)]);
+    // Once a lockout kicks in, tell the owner (at most once per 15 minutes)
+    const lockedOut = (await hits(db, ipKey)) >= 5 || (await hits(db, 'login:*')) >= 30;
+    if (lockedOut && (await hits(db, 'alert:login')) === 0) {
+      await addHit(db, 'alert:login', window).run();
+      deliver(env, ctx, [
+        loginAlertEmail(env, {
+          ip: clientIp(request),
+          country: request.cf?.country,
+          userAgent: (request.headers.get('user-agent') || '').slice(0, 200),
+        }),
+      ]);
+    }
     // Don't say which one was wrong
     throw new HttpError(401, 'Incorrect email or passcode. Please try again.');
   }
@@ -331,7 +363,7 @@ function absoluteMedia(value, origin) {
 async function publicRoute(request, env, ctx, parts) {
   const method = request.method;
   const origin = new URL(request.url).origin;
-  const publicJson = (data, status) => json(absoluteMedia(data, origin), status);
+  const publicJson = (data, status, headers) => json(absoluteMedia(data, origin), status, headers);
 
   if (parts[0] === 'products' && parts.length === 1 && method === 'GET') return publicJson(await getPublicCatalog(env.DB));
   if (parts[0] === 'categories' && parts.length === 1 && method === 'GET') return publicJson(await getPublicCategories(env.DB));
@@ -344,7 +376,7 @@ async function publicRoute(request, env, ctx, parts) {
     if (parts.length === 1) response = await placeOrder(request, env, ctx);
     else if (parts.length === 3 && parts[2] === 'verify-payment') response = await verifyPayment(request, env, ctx, parts[1]);
     else if (parts.length === 3 && parts[2] === 'payment-failed') response = await paymentFailed(request, env, parts[1]);
-    if (response) return publicJson(await response.json(), response.status);
+    if (response) return publicJson(await response.json(), response.status, { 'Cache-Control': 'no-store' });
   }
   return null;
 }
@@ -353,7 +385,7 @@ async function apiRoute(request, env, ctx, parts) {
   const method = request.method;
   if (parts[0] === 'razorpay' && parts[1] === 'webhook' && method === 'POST') return razorpayWebhook(request, env, ctx);
   if (parts[0] === 'admin') {
-    if (parts[1] === 'login' && method === 'POST') return login(request, env);
+    if (parts[1] === 'login' && method === 'POST') return login(request, env, ctx);
     return adminRoute(request, env, ctx, method, parts.slice(1));
   }
   const response = await publicRoute(request, env, ctx, parts);

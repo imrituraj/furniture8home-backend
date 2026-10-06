@@ -1,6 +1,7 @@
 import { isEmail, mailConfig, sendMail } from './mail.js';
 import qrcode from 'qrcode-generator';
 import { formatPrice } from './catalog.js';
+import { addHit, hits } from './auth.js';
 
 const SHOP_PHONE = '60025 84075';
 const SHOP_WHATSAPP = 'https://wa.me/916002584075';
@@ -265,15 +266,76 @@ export function statusEmails(env, order, status) {
   ];
 }
 
+// Customers type their own email at checkout, so anyone could make the shop email a stranger.
+// Cap emails per address and per day, so the Gmail account can't be used to send spam (Gmail
+// suspends accounts that do) and always has room left for the owner's alerts.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_PER_ADDRESS_PER_DAY = 8;
+const MAX_CUSTOMER_EMAILS_PER_DAY = 300;
+const MAX_EMAILS_PER_DAY = 450; // Gmail allows about 500
+
+async function allowedToSend(env, email, isOwner) {
+  const db = env.DB;
+  const address = email.to.toLowerCase();
+  const checks = [['mail:all', MAX_EMAILS_PER_DAY]];
+  if (!isOwner) checks.push(['mail:customers', MAX_CUSTOMER_EMAILS_PER_DAY], [`mail:to:${address}`, MAX_PER_ADDRESS_PER_DAY]);
+  for (const [key, max] of checks) {
+    if ((await hits(db, key)) >= max) {
+      console.warn(`Email "${email.subject}" not sent: daily limit ${key} reached`);
+      return false;
+    }
+  }
+  await db.batch(checks.map(([key]) => addHit(db, key, DAY_MS)));
+  return true;
+}
+
 /**
  * Send emails without holding up the response. Failures are logged, never shown to the customer.
  */
 export function deliver(env, ctx, emails) {
   if (!mailConfig(env).enabled) return;
+  const owner = (shopEmail(env) || '').toLowerCase();
   // Customer emails have no Reply-To, so replies reach the sending address (the shop's public
   // inbox). Owner alerts set Reply-To to the customer.
   const sends = emails
     .filter((email) => isEmail(email.to))
-    .map((email) => sendMail(env, email).catch((err) => console.error(`Email "${email.subject}" failed:`, err.message)));
+    .map(async (email) => {
+      try {
+        if (await allowedToSend(env, email, email.to.toLowerCase() === owner)) await sendMail(env, email);
+      } catch (err) {
+        console.error(`Email "${email.subject}" failed:`, err.message);
+      }
+    });
   if (sends.length) ctx.waitUntil(Promise.all(sends));
+}
+
+/**
+ * Tell the owner someone keeps failing to log in to the admin (sent at most once per lockout).
+ */
+export function loginAlertEmail(env, { ip, country, userAgent }) {
+  const when = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+  const details = [
+    ['Time', `${when} IST`],
+    ['IP address', ip],
+    ['Country', country || 'Unknown'],
+    ['Device', userAgent || 'Unknown'],
+  ];
+  return {
+    to: shopEmail(env),
+    subject: 'Security alert: repeated failed admin logins · Furniture8home',
+    text: [
+      'Someone has repeatedly entered a wrong email or passcode on the Furniture8home admin. Admin login is locked for them for 15 minutes.',
+      '',
+      ...details.map(([k, v]) => `${k}: ${v}`),
+      '',
+      'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PIN in Cloudflare (Worker → Settings → Variables and Secrets).',
+    ].join('\n'),
+    html: layout({
+      preheader: 'Repeated failed admin logins were blocked.',
+      heading: 'Repeated failed admin logins',
+      intro: 'Someone has repeatedly entered a wrong email or passcode on the Furniture8home admin. Login is locked for them for 15 minutes, and nothing was accessed.',
+      content: detailsHtml(details.map(([k, v]) => [k, escapeHtml(v)])),
+      footer: 'If this was you, wait 15 minutes and try again. If not, consider changing ADMIN_PIN in Cloudflare (Worker → Settings → Variables and Secrets).',
+    }),
+  };
 }
