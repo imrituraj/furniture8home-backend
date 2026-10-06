@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "echo \"No build step: wrangler bundles src/index.js on deploy\"",
     "dev": "wrangler dev --var ENVIRONMENT:development --var STOREFRONT_ORIGIN:http://localhost:5173 --var ADMIN_ORIGIN:http://localhost:5174",
     "deploy": "wrangler deploy"
   },
