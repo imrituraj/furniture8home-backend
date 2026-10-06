@@ -263,23 +263,29 @@ async function adminRoute(request, env, method, parts) {
   throw new HttpError(404, 'Not found');
 }
 
-// ---------- Storefront access (the storefront is hosted on another domain) ----------
+// ---------- Cross-site access (the storefront and admin are hosted on other domains) ----------
 
-// STOREFRONT_ORIGIN lists the sites allowed to call the public API, comma-separated
-function allowedOrigin(request, env) {
-  const origin = request.headers.get('Origin');
-  const allowed = String(env.STOREFRONT_ORIGIN || '*').split(',').map((o) => o.trim()).filter(Boolean);
-  if (allowed.includes('*')) return '*';
-  return origin && allowed.includes(origin) ? origin : null;
+function originList(value) {
+  return String(value || '').split(',').map((o) => o.trim()).filter(Boolean);
 }
 
-function withCors(response, request, env) {
-  const origin = allowedOrigin(request, env);
-  if (!origin) return response;
+// Public shop endpoints: the storefront (STOREFRONT_ORIGIN) and the admin (ADMIN_ORIGIN).
+// Admin endpoints: the admin only. Logins use a bearer token, never cookies.
+const CORS_SCOPES = {
+  public: { origins: (env) => [...originList(env.STOREFRONT_ORIGIN || '*'), ...originList(env.ADMIN_ORIGIN)], methods: 'GET, POST, OPTIONS', headers: 'Content-Type' },
+  admin: { origins: (env) => originList(env.ADMIN_ORIGIN), methods: 'GET, POST, PATCH, PUT, DELETE, OPTIONS', headers: 'Content-Type, Authorization' },
+};
+
+function withCors(response, request, env, scope) {
+  const { origins, methods, headers: allowHeaders } = CORS_SCOPES[scope];
+  const allowed = origins(env);
+  const origin = request.headers.get('Origin');
+  const allow = allowed.includes('*') ? '*' : origin && allowed.includes(origin) ? origin : null;
+  if (!allow) return response;
   const headers = new Headers(response.headers);
-  headers.set('Access-Control-Allow-Origin', origin);
-  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  headers.set('Access-Control-Allow-Origin', allow);
+  headers.set('Access-Control-Allow-Methods', methods);
+  headers.set('Access-Control-Allow-Headers', allowHeaders);
   headers.set('Access-Control-Max-Age', '86400');
   headers.append('Vary', 'Origin');
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
@@ -322,9 +328,20 @@ async function publicRoute(request, env, parts) {
   return null;
 }
 
+async function apiRoute(request, env, parts) {
+  const method = request.method;
+  if (parts[0] === 'razorpay' && parts[1] === 'webhook' && method === 'POST') return razorpayWebhook(request, env);
+  if (parts[0] === 'admin') {
+    if (parts[1] === 'login' && method === 'POST') return login(request, env);
+    return adminRoute(request, env, method, parts.slice(1));
+  }
+  const response = await publicRoute(request, env, parts);
+  if (response) return response;
+  throw new HttpError(404, 'Not found');
+}
+
 async function route(request, env) {
-  const url = new URL(request.url);
-  const { pathname } = url;
+  const { pathname } = new URL(request.url);
   const method = request.method;
 
   if (pathname.startsWith('/media/') && (method === 'GET' || method === 'HEAD')) {
@@ -332,34 +349,30 @@ async function route(request, env) {
     return serveMedia(env.DB, pathname.slice('/media/'.length));
   }
 
-  if (!pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
+  if (!pathname.startsWith('/api/')) {
+    // This Worker is API-only; the storefront and admin dashboard are hosted on Vercel
+    return json({ name: 'Furniture8home API', ok: true }, pathname === '/' ? 200 : 404);
+  }
 
   const parts = pathname.slice('/api/'.length).split('/').filter(Boolean);
-  const isPublic = ['products', 'categories', 'config', 'orders'].includes(parts[0]);
+  const scope = parts[0] === 'admin' ? 'admin' : 'public';
 
-  // Browsers ask before cross-site POSTs with a JSON body
-  if (isPublic && method === 'OPTIONS') return withCors(empty(), request, env);
+  // Browsers check before cross-site requests with a JSON body or a login token
+  if (method === 'OPTIONS') return withCors(empty(), request, env, scope);
 
-  await ensureSeeded(env.DB);
-
-  if (isPublic) {
-    try {
-      const response = await publicRoute(request, env, parts);
-      if (response) return withCors(response, request, env);
-    } catch (err) {
-      if (err instanceof HttpError) return withCors(json({ error: err.message }, err.status), request, env);
+  let response;
+  try {
+    await ensureSeeded(env.DB);
+    response = await apiRoute(request, env, parts);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      response = json({ error: err.message }, err.status);
+    } else {
       console.error(err);
-      return withCors(json({ error: 'Something went wrong. Please try again.' }, 500), request, env);
+      response = json({ error: 'Something went wrong. Please try again.' }, 500);
     }
   }
-  if (parts[0] === 'razorpay' && parts[1] === 'webhook' && method === 'POST') return razorpayWebhook(request, env);
-
-  if (parts[0] === 'admin') {
-    if (parts[1] === 'login' && method === 'POST') return login(request, env);
-    return adminRoute(request, env, method, parts.slice(1));
-  }
-
-  throw new HttpError(404, 'Not found');
+  return withCors(response, request, env, scope);
 }
 
 export default {
@@ -367,7 +380,6 @@ export default {
     try {
       return await route(request, env);
     } catch (err) {
-      if (err instanceof HttpError) return json({ error: err.message }, err.status);
       console.error(err);
       return json({ error: 'Something went wrong. Please try again.' }, 500);
     }
