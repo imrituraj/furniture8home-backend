@@ -23,7 +23,9 @@ import {
   buildOrder,
   findOrderByRazorpayId,
   getOrders,
+  getOrder,
   getOwnOrder,
+  markOrderPaid,
   publicOrder,
   saveOrder,
   updateOrder,
@@ -32,20 +34,21 @@ import { createRazorpayOrder, fetchPayment, razorpayConfig, verifyPaymentSignatu
 import { addHit, adminPin, createSession, endSession, hits, pinMatches, requireAdmin } from './auth.js';
 import { serveMedia } from './media.js';
 import { ensureSeeded, resetCatalog } from './seed.js';
+import { NOTIFY_STATUSES, deliver, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
 
 const PUBLIC_BODY_LIMIT = 20_000;
 const ADMIN_BODY_LIMIT = 3_000_000; // photos are resized in the admin before upload
 
 // ---------- Payments ----------
 
-async function markPaid(db, order, paymentId) {
-  // Never resurrect an order staff already refunded, and keep cancelled orders cancelled
-  if (order.paymentStatus === 'paid' || order.paymentStatus === 'refunded') return order;
-  return updateOrder(db, order.id, {
-    paymentStatus: 'paid',
-    status: order.status === 'new' ? 'confirmed' : order.status,
-    razorpay: { ...order.razorpay, paymentId: paymentId || order.razorpay.paymentId },
-  });
+/**
+ * Record a confirmed payment and send the "payment received" emails, once per order.
+ */
+async function markPaid(env, ctx, order, paymentId) {
+  const updated = await markOrderPaid(env.DB, order, paymentId);
+  if (!updated) return (await getOrder(env.DB, order.id)) || order;
+  deliver(env, ctx, paymentReceivedEmails(env, updated));
+  return updated;
 }
 
 function paymentMatchesOrder(payment, order) {
@@ -59,7 +62,7 @@ function paymentMatchesOrder(payment, order) {
 
 // ---------- Public storefront API ----------
 
-async function placeOrder(request, env) {
+async function placeOrder(request, env, ctx) {
   const db = env.DB;
   const ipKey = `orders:${clientIp(request)}`;
   if ((await hits(db, ipKey)) >= 15) {
@@ -82,6 +85,7 @@ async function placeOrder(request, env) {
   }
 
   const accessToken = await saveOrder(db, order);
+  deliver(env, ctx, orderPlacedEmails(env, order));
   return json(
     {
       order: publicOrder(order),
@@ -98,7 +102,7 @@ async function findOwnOrder(env, id, body) {
   return order;
 }
 
-async function verifyPayment(request, env, id) {
+async function verifyPayment(request, env, ctx, id) {
   const body = await readJson(request, PUBLIC_BODY_LIMIT);
   const order = await findOwnOrder(env, id, body);
   const rzp = razorpayConfig(env);
@@ -122,7 +126,7 @@ async function verifyPayment(request, env, id) {
     console.warn(`Could not look up payment ${paymentId}; relying on its signature:`, err.message);
   }
 
-  return json(publicOrder(await markPaid(env.DB, order, paymentId)));
+  return json(publicOrder(await markPaid(env, ctx, order, paymentId)));
 }
 
 async function paymentFailed(request, env, id) {
@@ -131,7 +135,7 @@ async function paymentFailed(request, env, id) {
   return json(publicOrder(updated));
 }
 
-async function razorpayWebhook(request, env) {
+async function razorpayWebhook(request, env, ctx) {
   const rzp = razorpayConfig(env);
   if (!rzp.webhookSecret) return new Response('Not found', { status: 404 });
   const raw = await request.arrayBuffer();
@@ -150,7 +154,7 @@ async function razorpayWebhook(request, env) {
   const order = typeof rzpOrderId === 'string' ? await findOrderByRazorpayId(env.DB, rzpOrderId) : null;
 
   if (order && (event.event === 'order.paid' || event.event === 'payment.captured')) {
-    if (!payment || paymentMatchesOrder(payment, order)) await markPaid(env.DB, order, payment?.id);
+    if (!payment || paymentMatchesOrder(payment, order)) await markPaid(env, ctx, order, payment?.id);
     else console.warn(`Webhook payment for ${order.id} does not match the order amount — not marking paid`);
   } else if (order && event.event === 'payment.failed' && order.paymentStatus === 'pending') {
     await updateOrder(env.DB, order.id, { paymentStatus: 'failed' });
@@ -186,7 +190,7 @@ function stripToken({ accessToken, ...order }) {
   return order;
 }
 
-async function adminRoute(request, env, method, parts) {
+async function adminRoute(request, env, ctx, method, parts) {
   const db = env.DB;
   const token = await requireAdmin(db, request);
   const body = () => readJson(request, ADMIN_BODY_LIMIT);
@@ -254,8 +258,24 @@ async function adminRoute(request, env, method, parts) {
         if (typeof adminNote !== 'string') throw new ValidationError('Note must be text');
         updates.adminNote = adminNote.slice(0, 1000);
       }
-      const updated = await updateOrder(db, key, updates);
-      if (!updated) throw new HttpError(404, 'Order not found');
+      const before = await getOrder(db, key);
+      if (!before) throw new HttpError(404, 'Order not found');
+      let updated;
+      if (updates.paymentStatus === 'paid' && before.paymentStatus !== 'paid') {
+        // Marking paid by hand (cash, UPI at the showroom) emails the customer a receipt
+        const { paymentStatus: _paid, ...rest } = updates;
+        const paid = await markOrderPaid(db, { ...before, ...rest }, null);
+        updated = paid || (await updateOrder(db, key, updates));
+        if (paid) deliver(env, ctx, paymentReceivedEmails(env, paid, { alertShop: false }));
+      } else {
+        updated = await updateOrder(db, key, updates);
+      }
+      // Tell the customer about progress they'd care about (confirmed, out for delivery, delivered)
+      if (updates.status && updates.status !== before.status && NOTIFY_STATUSES.includes(updates.status)) {
+        // Marking paid already moves a new order to confirmed, and its receipt says so
+        const confirmedByPayment = updates.status === 'confirmed' && updated.paymentStatus === 'paid' && before.paymentStatus !== 'paid';
+        if (!confirmedByPayment) deliver(env, ctx, statusEmails(updated, updates.status));
+      }
       return adminJson(stripToken(updated));
     }
   }
@@ -307,7 +327,7 @@ function absoluteMedia(value, origin) {
 
 // ---------- Router ----------
 
-async function publicRoute(request, env, parts) {
+async function publicRoute(request, env, ctx, parts) {
   const method = request.method;
   const origin = new URL(request.url).origin;
   const publicJson = (data, status) => json(absoluteMedia(data, origin), status);
@@ -320,27 +340,27 @@ async function publicRoute(request, env, parts) {
   }
   if (parts[0] === 'orders' && method === 'POST') {
     let response = null;
-    if (parts.length === 1) response = await placeOrder(request, env);
-    else if (parts.length === 3 && parts[2] === 'verify-payment') response = await verifyPayment(request, env, parts[1]);
+    if (parts.length === 1) response = await placeOrder(request, env, ctx);
+    else if (parts.length === 3 && parts[2] === 'verify-payment') response = await verifyPayment(request, env, ctx, parts[1]);
     else if (parts.length === 3 && parts[2] === 'payment-failed') response = await paymentFailed(request, env, parts[1]);
     if (response) return publicJson(await response.json(), response.status);
   }
   return null;
 }
 
-async function apiRoute(request, env, parts) {
+async function apiRoute(request, env, ctx, parts) {
   const method = request.method;
-  if (parts[0] === 'razorpay' && parts[1] === 'webhook' && method === 'POST') return razorpayWebhook(request, env);
+  if (parts[0] === 'razorpay' && parts[1] === 'webhook' && method === 'POST') return razorpayWebhook(request, env, ctx);
   if (parts[0] === 'admin') {
     if (parts[1] === 'login' && method === 'POST') return login(request, env);
-    return adminRoute(request, env, method, parts.slice(1));
+    return adminRoute(request, env, ctx, method, parts.slice(1));
   }
-  const response = await publicRoute(request, env, parts);
+  const response = await publicRoute(request, env, ctx, parts);
   if (response) return response;
   throw new HttpError(404, 'Not found');
 }
 
-async function route(request, env) {
+async function route(request, env, ctx) {
   const { pathname } = new URL(request.url);
   const method = request.method;
 
@@ -363,7 +383,7 @@ async function route(request, env) {
   let response;
   try {
     await ensureSeeded(env.DB);
-    response = await apiRoute(request, env, parts);
+    response = await apiRoute(request, env, ctx, parts);
   } catch (err) {
     if (err instanceof HttpError) {
       response = json({ error: err.message }, err.status);
@@ -376,9 +396,9 @@ async function route(request, env) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     try {
-      return await route(request, env);
+      return await route(request, env, ctx);
     } catch (err) {
       console.error(err);
       return json({ error: 'Something went wrong. Please try again.' }, 500);

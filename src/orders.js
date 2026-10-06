@@ -156,3 +156,29 @@ export function publicOrder(order) {
   const { id, createdAt, items, total, totalLabel, fulfilment, paymentMethod, paymentStatus, status } = order;
   return { id, createdAt, items, total, totalLabel, fulfilment, paymentMethod, paymentStatus, status, customerName: order.customer.name };
 }
+
+export async function getOrder(db, id) {
+  const row = await db.prepare('SELECT data FROM orders WHERE id = ?').bind(id).first();
+  return row ? JSON.parse(row.data) : null;
+}
+
+/**
+ * Mark an order paid, once. Razorpay's webhook and the customer's browser can confirm the same
+ * payment at the same moment; the conditional UPDATE lets only one of them win, so follow-up
+ * work (emails) runs exactly once. Refunded orders are never marked paid again.
+ * Returns the updated order, or null if it was already paid or refunded.
+ */
+export async function markOrderPaid(db, order, paymentId) {
+  const next = {
+    ...order,
+    paymentStatus: 'paid',
+    status: order.status === 'new' ? 'confirmed' : order.status,
+    razorpay: order.razorpay ? { ...order.razorpay, paymentId: paymentId || order.razorpay.paymentId } : order.razorpay,
+    updatedAt: new Date().toISOString(),
+  };
+  const { meta } = await db
+    .prepare("UPDATE orders SET data = ? WHERE id = ? AND json_extract(data, '$.paymentStatus') NOT IN ('paid', 'refunded')")
+    .bind(JSON.stringify(next), order.id)
+    .run();
+  return meta.changes > 0 ? next : null;
+}

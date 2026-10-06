@@ -13,12 +13,17 @@
       "database_name": "furniture8home"
     }
   ],
+  // Keep variables added in the Cloudflare dashboard (e.g. RAZORPAY_KEY_ID) when deploying
+  "keep_vars": true,
   "vars": {
     "ENVIRONMENT": "production",
     // Sites allowed to call the public shop API, comma-separated
     "STOREFRONT_ORIGIN": "https://furniture8home.com,https://www.furniture8home.com",
     // Site allowed to call the admin API (log in, manage orders, products, categories)
-    "ADMIN_ORIGIN": "https://admin.furniture8home.com"
+    "ADMIN_ORIGIN": "https://admin.furniture8home.com",
+    // Gmail account that sends order emails, and where new-order alerts go
+    "GMAIL_USER": "Furniture8home@gmail.com",
+    "SHOP_EMAIL": "Furniture8home@gmail.com"
   },
   "observability": {
     "enabled": true
@@ -28,4 +33,5 @@
   //   RAZORPAY_KEY_ID           \  online payment is hidden at checkout
   //   RAZORPAY_KEY_SECRET       /  until both are set
   //   RAZORPAY_WEBHOOK_SECRET   optional, for https://<backend>/api/razorpay/webhook
+  //   GMAIL_APP_PASSWORD        Google app password for GMAIL_USER; order emails are off until set
 }
