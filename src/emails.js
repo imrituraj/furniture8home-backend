@@ -21,8 +21,9 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 }
 
+// The owner's inbox for new-order and payment alerts: SHOP_EMAIL, else the admin's email, else the sender
 function shopEmail(env) {
-  const address = (env.SHOP_EMAIL || mailConfig(env).user || '').trim();
+  const address = (env.SHOP_EMAIL || env.ADMIN_EMAIL || mailConfig(env).user || '').trim();
   return isEmail(address) ? address : null;
 }
 
@@ -269,11 +270,10 @@ export function statusEmails(env, order, status) {
  */
 export function deliver(env, ctx, emails) {
   if (!mailConfig(env).enabled) return;
-  const shopReplyTo = shopEmail(env) || undefined;
+  // Customer emails have no Reply-To, so replies reach the sending address (the shop's public
+  // inbox). Owner alerts set Reply-To to the customer.
   const sends = emails
     .filter((email) => isEmail(email.to))
-    .map((email) =>
-      sendMail(env, { replyTo: shopReplyTo, ...email }).catch((err) => console.error(`Email "${email.subject}" failed:`, err.message)),
-    );
+    .map((email) => sendMail(env, email).catch((err) => console.error(`Email "${email.subject}" failed:`, err.message)));
   if (sends.length) ctx.waitUntil(Promise.all(sends));
 }

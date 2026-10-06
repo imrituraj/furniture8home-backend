@@ -33,11 +33,28 @@ export function adminPin(env) {
   return env.ENVIRONMENT === 'development' ? '8888' : null;
 }
 
-export async function pinMatches(env, entered) {
+/**
+ * The admin's email address (ADMIN_EMAIL). Local dev falls back to admin@example.com.
+ */
+export function adminEmail(env) {
+  const email = String(env.ADMIN_EMAIL || '').trim().toLowerCase();
+  if (email) return email;
+  return env.ENVIRONMENT === 'development' ? 'admin@example.com' : null;
+}
+
+/**
+ * Both the admin email (any capitalisation) and the passcode must match.
+ */
+export async function credentialsMatch(env, enteredEmail, enteredPin) {
   const pin = adminPin(env);
-  if (!pin || (typeof entered !== 'string' && typeof entered !== 'number')) return false;
-  // Compare fixed-length digests so neither the PIN nor its length leaks through timing
-  return safeEqual(await sha256Hex(pin), await sha256Hex(String(entered).trim()));
+  const email = adminEmail(env);
+  if (!pin || !email) return false;
+  if (typeof enteredEmail !== 'string' || (typeof enteredPin !== 'string' && typeof enteredPin !== 'number')) return false;
+  // Compare fixed-length digests so neither value nor its length leaks through timing.
+  // Check both before deciding, so the response time doesn't reveal which one was wrong.
+  const emailOk = safeEqual(await sha256Hex(email), await sha256Hex(enteredEmail.trim().toLowerCase()));
+  const pinOk = safeEqual(await sha256Hex(pin), await sha256Hex(String(enteredPin).trim()));
+  return emailOk && pinOk;
 }
 
 export async function createSession(db) {

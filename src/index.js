@@ -31,7 +31,7 @@ import {
   updateOrder,
 } from './orders.js';
 import { createRazorpayOrder, fetchPayment, razorpayConfig, verifyPaymentSignature, verifyWebhookSignature } from './razorpay.js';
-import { addHit, adminPin, createSession, endSession, hits, pinMatches, requireAdmin } from './auth.js';
+import { addHit, adminEmail, adminPin, createSession, credentialsMatch, endSession, hits, requireAdmin } from './auth.js';
 import { serveMedia } from './media.js';
 import { ensureSeeded, resetCatalog } from './seed.js';
 import { NOTIFY_STATUSES, deliver, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
@@ -166,19 +166,20 @@ async function razorpayWebhook(request, env, ctx) {
 
 async function login(request, env) {
   const db = env.DB;
-  if (!adminPin(env)) {
-    throw new HttpError(503, 'Admin login is not set up yet. Set a 6–8 digit ADMIN_PIN secret for the Worker.');
+  if (!adminPin(env) || !adminEmail(env)) {
+    throw new HttpError(503, 'Admin login is not set up yet. Set ADMIN_EMAIL and a 6–8 digit ADMIN_PIN for the Worker.');
   }
   const ipKey = `login:${clientIp(request)}`;
-  // Lock out after repeated wrong PINs — per device, and site-wide to stop distributed guessing
+  // Lock out after repeated failed logins — per device, and site-wide to stop distributed guessing
   if ((await hits(db, ipKey)) >= 5 || (await hits(db, 'login:*')) >= 30) {
-    throw new HttpError(429, 'Too many wrong PINs. Try again in 15 minutes.');
+    throw new HttpError(429, 'Too many failed logins. Try again in 15 minutes.');
   }
   const body = await readJson(request, 1_000);
-  if (!(await pinMatches(env, body?.pin))) {
+  if (!(await credentialsMatch(env, body?.email, body?.pin))) {
     const window = 15 * 60 * 1000;
     await db.batch([addHit(db, ipKey, window), addHit(db, 'login:*', window)]);
-    throw new HttpError(401, 'Incorrect PIN. Please try again.');
+    // Don't say which one was wrong
+    throw new HttpError(401, 'Incorrect email or passcode. Please try again.');
   }
   return json({ token: await createSession(db) });
 }
