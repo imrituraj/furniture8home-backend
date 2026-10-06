@@ -1,6 +1,6 @@
 # Furniture8home backend
 
-The shop backend for [furniture8home.com](https://github.com/imrituraj/furniture8home.com), running as one Cloudflare Worker:
+The shop backend for the [furniture8home-frontend](https://github.com/imrituraj/furniture8home-frontend) storefront, running as one Cloudflare Worker:
 
 | Path | What it serves |
 | --- | --- |
