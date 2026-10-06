@@ -43,8 +43,9 @@ function wrap76(base64) {
   return base64.replace(/.{1,76}/g, '$&\r\n');
 }
 
-function buildMessage({ from, fromName, to, replyTo, subject, text, html }) {
+function buildMessage({ from, fromName, to, replyTo, subject, text, html, inlineImages = [] }) {
   const boundary = `f8h-${crypto.randomUUID()}`;
+  const related = `f8h-rel-${crypto.randomUUID()}`;
   const domain = from.split('@')[1];
   const headers = [
     `From: ${encodeHeader(fromName)} <${from}>`,
@@ -54,17 +55,44 @@ function buildMessage({ from, fromName, to, replyTo, subject, text, html }) {
     `Date: ${new Date().toUTCString().replace('GMT', '+0000')}`,
     `Message-ID: <${crypto.randomUUID()}@${domain}>`,
     'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
   ];
   const part = (type, body) =>
     [`--${boundary}`, `Content-Type: ${type}; charset=UTF-8`, 'Content-Transfer-Encoding: base64', '', wrap76(base64Utf8(body))].join('\r\n');
-  return [...headers, '', part('text/plain', text), part('text/html', html), `--${boundary}--`, ''].join('\r\n');
+  const alternative = [part('text/plain', text), part('text/html', html), `--${boundary}--`].join('\r\n');
+
+  if (inlineImages.length === 0) {
+    return [...headers, `Content-Type: multipart/alternative; boundary="${boundary}"`, '', alternative, ''].join('\r\n');
+  }
+  // Images the HTML shows with <img src="cid:…"> travel as inline parts next to it
+  const images = inlineImages.map((img) =>
+    [
+      `--${related}`,
+      `Content-Type: ${img.contentType}; name="${img.filename}"`,
+      'Content-Transfer-Encoding: base64',
+      `Content-ID: <${img.cid}>`,
+      `Content-Disposition: inline; filename="${img.filename}"`,
+      '',
+      wrap76(img.base64),
+    ].join('\r\n'),
+  );
+  return [
+    ...headers,
+    `Content-Type: multipart/related; boundary="${related}"`,
+    '',
+    `--${related}`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    '',
+    alternative,
+    ...images,
+    `--${related}--`,
+    '',
+  ].join('\r\n');
 }
 
 /**
  * Send one email through Gmail's SMTP server (implicit TLS on port 465).
  */
-export async function sendMail(env, { to, subject, text, html, replyTo }) {
+export async function sendMail(env, { to, subject, text, html, replyTo, inlineImages }) {
   const config = mailConfig(env);
   if (!config.enabled) return false;
   const recipients = (Array.isArray(to) ? to : [to]).filter(isEmail);
@@ -108,7 +136,7 @@ export async function sendMail(env, { to, subject, text, html, replyTo }) {
     await command(`MAIL FROM:<${config.user}>`, [250]);
     for (const rcpt of recipients) await command(`RCPT TO:<${rcpt}>`, [250, 251], 'recipient');
     await command('DATA', [354]);
-    const message = buildMessage({ from: config.user, fromName: 'Furniture8home', to: recipients, replyTo, subject, text, html });
+    const message = buildMessage({ from: config.user, fromName: 'Furniture8home', to: recipients, replyTo, subject, text, html, inlineImages });
     // Lines starting with "." must be doubled so they aren't read as the end of the message
     const stuffed = message.replace(/\r\n\./g, '\r\n..');
     await command(`${stuffed}\r\n.`, [250], 'message');

@@ -1,4 +1,5 @@
 import { isEmail, mailConfig, sendMail } from './mail.js';
+import qrcode from 'qrcode-generator';
 import { formatPrice } from './catalog.js';
 
 const SHOP_PHONE = '60025 84075';
@@ -40,6 +41,40 @@ function fulfilmentText(order) {
     return `Pickup from our ${showroom} showroom (${SHOWROOMS[showroom] || 'Guwahati'})`;
   }
   return `Delivery to ${order.customer.address}, PIN ${order.customer.pincode}`;
+}
+
+// ---------- Order pass (QR code staff scan at the showroom or on delivery) ----------
+
+const QR_CID = 'order-pass-qr@furniture8home';
+
+/**
+ * The QR links to the order in the admin dashboard (it needs the admin PIN, so it shows
+ * customers nothing). Same link as the pass on the storefront's order-placed screen.
+ */
+function orderQrImage(env, order) {
+  const origin = String(env.ADMIN_ORIGIN || '').split(',')[0].trim();
+  if (!origin) return null;
+  const qr = qrcode(0, 'Q');
+  qr.addData(`${origin}/#order/${encodeURIComponent(order.id)}`);
+  qr.make();
+  // A GIF data URL; Gmail won't show data: images, so it's sent as an inline attachment instead
+  const dataUrl = qr.createDataURL(6, 4);
+  return { cid: QR_CID, contentType: 'image/gif', filename: `${order.id}-pass.gif`, base64: dataUrl.split(',')[1] };
+}
+
+function passHtml(order) {
+  const where = order.fulfilment.type === 'pickup' ? `Pickup at our ${order.fulfilment.showroom} showroom` : 'Home delivery';
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0 6px;"><tr><td align="center">
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:280px;background:#26312a;border-radius:20px;">
+      <tr><td style="padding:16px 18px 0;color:#f3eee6;font-family:Georgia,serif;font-size:16px;">Furniture<span style="color:#e2b486;">8</span>home
+        <span style="float:right;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:#b9c2b1;line-height:22px;">ORDER PASS</span></td></tr>
+      <tr><td align="center" style="padding:14px 18px 0;"><div style="background:#ffffff;border-radius:14px;padding:8px;"><img src="cid:${QR_CID}" width="228" height="228" alt="QR code for order ${escapeHtml(order.id)}" style="display:block;width:228px;height:228px;"></div></td></tr>
+      <tr><td align="center" style="padding:14px 18px 0;font-family:Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:#b9c2b1;">ORDER</td></tr>
+      <tr><td align="center" style="padding:2px 18px 0;font-family:Menlo,Consolas,monospace;font-size:19px;font-weight:700;color:#f3eee6;">${escapeHtml(order.id)}</td></tr>
+      <tr><td align="center" style="padding:2px 18px 0;font-family:Georgia,serif;font-size:17px;color:#e2b486;">${escapeHtml(order.totalLabel)}</td></tr>
+      <tr><td align="center" style="padding:10px 18px 18px;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.45;color:#b9c2b1;"><strong style="color:#f3eee6;">${escapeHtml(where)}</strong><br>Show this code at the showroom or to our delivery team.</td></tr>
+    </table>
+  </td></tr></table>`;
 }
 
 // ---------- Layout ----------
@@ -119,7 +154,8 @@ function customerText(order, heading, intro) {
 
 // ---------- Emails ----------
 
-function customerEmail(order, { subject, heading, intro }) {
+function customerEmail(env, order, { subject, heading, intro, pass = true }) {
+  const qr = pass ? orderQrImage(env, order) : null;
   return {
     to: order.customer.email,
     subject,
@@ -128,9 +164,10 @@ function customerEmail(order, { subject, heading, intro }) {
       preheader: intro,
       heading,
       intro: escapeHtml(intro),
-      content: `${itemsHtml(order)}${customerSummary(order)}`,
+      content: `${qr ? passHtml(order) : ''}${itemsHtml(order)}${customerSummary(order)}`,
       footer: CUSTOMER_FOOTER,
     }),
+    inlineImages: qr ? [qr] : [],
   };
 }
 
@@ -184,7 +221,7 @@ export function orderPlacedEmails(env, order) {
   if (order.paymentMethod === 'razorpay') return [];
   return [
     shopAlert(env, order, { paid: false }),
-    customerEmail(order, {
+    customerEmail(env, order, {
       subject: `Order ${order.id} received · Furniture8home`,
       heading: `Thank you, ${order.customer.name}!`,
       intro:
@@ -203,7 +240,7 @@ export function paymentReceivedEmails(env, order, { alertShop = order.paymentMet
   const online = order.paymentMethod === 'razorpay';
   return [
     ...(alertShop ? [shopAlert(env, order, { paid: true })] : []),
-    customerEmail(order, {
+    customerEmail(env, order, {
       subject: `Payment received for order ${order.id} · Furniture8home`,
       heading: online ? `Thank you, ${order.customer.name}! Payment received` : 'Payment received',
       intro: online
@@ -213,14 +250,16 @@ export function paymentReceivedEmails(env, order, { alertShop = order.paymentMet
   ];
 }
 
-export function statusEmails(order, status) {
+export function statusEmails(env, order, status) {
   const copy = STATUS_COPY[status];
   if (!copy) return [];
   return [
-    customerEmail(order, {
+    customerEmail(env, order, {
       subject: `Order ${order.id} ${copy.subject} · Furniture8home`,
       heading: copy.heading,
       intro: copy.body,
+      // Nothing left to show the pass for once it's delivered
+      pass: status !== 'delivered',
     }),
   ];
 }

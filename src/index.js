@@ -274,7 +274,7 @@ async function adminRoute(request, env, ctx, method, parts) {
       if (updates.status && updates.status !== before.status && NOTIFY_STATUSES.includes(updates.status)) {
         // Marking paid already moves a new order to confirmed, and its receipt says so
         const confirmedByPayment = updates.status === 'confirmed' && updated.paymentStatus === 'paid' && before.paymentStatus !== 'paid';
-        if (!confirmedByPayment) deliver(env, ctx, statusEmails(updated, updates.status));
+        if (!confirmedByPayment) deliver(env, ctx, statusEmails(env, updated, updates.status));
       }
       return adminJson(stripToken(updated));
     }
