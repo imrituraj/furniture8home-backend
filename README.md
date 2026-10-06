@@ -16,14 +16,14 @@ Data lives in a **Cloudflare D1** database (SQLite). On first use the Worker cre
 
 The Worker emails from **Furniture8home@gmail.com** through Gmail's mail server (`src/mail.js`, templates in `src/emails.js`). Emails go out in the background, so a Gmail problem never slows down or breaks checkout; failures are logged in the Worker's logs.
 
-| When | Shop (Furniture8home@gmail.com) | Customer (if they gave an email) |
+| When | Owner (`ADMIN_EMAIL`) | Customer (if they gave an email) |
 | --- | --- | --- |
 | Offline / WhatsApp order placed | New-order alert | Order confirmation |
 | Razorpay payment confirmed | New **paid** order alert | Confirmation + payment received |
 | Admin marks payment Paid | — | Payment received |
 | Admin sets Confirmed / Out for delivery / Delivered | — | Status update |
 
-Online orders only alert the shop once paid, so abandoned payments don't send anything. Customers can reply to any email to reach the shop; replying to a new-order alert reaches the customer.
+Emails are sent from Furniture8home@gmail.com. Online orders only alert the owner once paid, so abandoned payments don't send anything. Customers' replies go to Furniture8home@gmail.com; replying to a new-order alert reaches the customer.
 
 **Turning it on:** emails stay off until the `GMAIL_APP_PASSWORD` secret is set.
 
@@ -51,7 +51,7 @@ Gmail allows about 500 emails a day from one account. If the shop outgrows that,
 - Prices are always recalculated on the server from the catalog; the client's prices are ignored.
 - Online orders are marked paid only after the Razorpay signature is verified **and** Razorpay confirms the payment is for this order and the full amount, or a signed webhook arrives.
 - Customers can only see or update their own order, using a secret returned at checkout.
-- Admin login is a 6–8 digit PIN (the `ADMIN_PIN` secret). Wrong PINs are rate-limited per device and site-wide. Sessions last 12 hours and use a bearer token, not cookies.
+- Admin login needs the admin email and a 6–8 digit passcode (the `ADMIN_EMAIL` and `ADMIN_PIN` secrets); the error never says which was wrong. Failed logins are rate-limited per device and site-wide. Sessions last 12 hours and use a bearer token, not cookies.
 - Browsers may only call the public API from `STOREFRONT_ORIGIN` (and the admin), and the admin API only from `ADMIN_ORIGIN`.
 
 ## Develop
@@ -61,7 +61,7 @@ npm install     # installs wrangler
 npm run dev     # API on http://localhost:8787 with a local D1 database
 ```
 
-Locally the admin PIN is `8888`, the storefront (port 5173) and admin (port 5174) from the frontend repo are allowed, and online payment is hidden until Razorpay keys are set. To test payments, put test-mode keys in a `.dev.vars` file (gitignored):
+Locally the admin login is `admin@example.com` with passcode `8888`, the storefront (port 5173) and admin (port 5174) from the frontend repo are allowed, and online payment is hidden until Razorpay keys are set. To test payments, put test-mode keys in a `.dev.vars` file (gitignored):
 
 ```
 RAZORPAY_KEY_ID=rzp_test_...
@@ -76,7 +76,9 @@ The Worker is connected to this repo in Cloudflare (Workers & Pages → `furnitu
 
    | Secret | Value |
    | --- | --- |
-   | `ADMIN_PIN` | 6–8 digits. Admin login is refused until this is set. |
+   | `ADMIN_EMAIL` | The owner's email. Used with the passcode to log in, and receives the new-order and payment alerts. |
+   | `ADMIN_PIN` | 6–8 digit passcode. Admin login is refused until both are set. |
+   | `SHOP_EMAIL` | Optional: send order alerts somewhere other than `ADMIN_EMAIL`. |
    | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | From Razorpay Dashboard → Account & Settings → API Keys. Use test-mode keys first. |
    | `RAZORPAY_WEBHOOK_SECRET` | Optional, see step 3. |
    | `GMAIL_APP_PASSWORD` | Turns on order emails, see [Order emails](#order-emails). |
