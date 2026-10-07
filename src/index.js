@@ -34,7 +34,7 @@ import { createRazorpayOrder, fetchPayment, razorpayConfig, verifyPaymentSignatu
 import { addHit, adminEmail, adminPin, createSession, credentialsMatch, endSession, hits, requireAdmin } from './auth.js';
 import { serveMedia } from './media.js';
 import { ensureSeeded, resetCatalog } from './seed.js';
-import { NOTIFY_STATUSES, deliver, loginAlertEmail, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
+import { NOTIFY_STATUSES, deliver, loginAlertEmail, loginNoticeEmail, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
 
 const PUBLIC_BODY_LIMIT = 20_000;
 const WEBHOOK_BODY_LIMIT = 1_000_000;
@@ -184,6 +184,24 @@ async function razorpayWebhook(request, env, ctx) {
 
 // ---------- Admin ----------
 
+/**
+ * Who is logging in: IP, approximate location and network (from Cloudflare), and their browser.
+ */
+function loginContext(request, enteredEmail) {
+  const cf = request.cf || {};
+  return {
+    email: typeof enteredEmail === 'string' ? enteredEmail.trim().slice(0, 120) : '',
+    ip: clientIp(request),
+    city: cf.city,
+    region: cf.region,
+    country: cf.country,
+    timezone: cf.timezone,
+    network: cf.asOrganization,
+    userAgent: (request.headers.get('user-agent') || '').slice(0, 300),
+    language: (request.headers.get('accept-language') || '').split(',')[0].slice(0, 20),
+  };
+}
+
 async function login(request, env, ctx) {
   const db = env.DB;
   if (!adminPin(env) || !adminEmail(env)) {
@@ -203,17 +221,16 @@ async function login(request, env, ctx) {
     if (lockedOut && (await hits(db, 'alert:login')) === 0) {
       await addHit(db, 'alert:login', window).run();
       deliver(env, ctx, [
-        loginAlertEmail(env, {
-          ip: clientIp(request),
-          country: request.cf?.country,
-          userAgent: (request.headers.get('user-agent') || '').slice(0, 200),
-        }),
+        loginAlertEmail(env, loginContext(request, body?.email)),
       ]);
     }
     // Don't say which one was wrong
     throw new HttpError(401, 'Incorrect email or passcode. Please try again.');
   }
-  return json({ token: await createSession(db) });
+  const token = await createSession(env);
+  // Tell the owner about every successful admin login
+  deliver(env, ctx, [loginNoticeEmail(env, loginContext(request, body?.email))]);
+  return json({ token });
 }
 
 const NO_STORE = { 'Cache-Control': 'no-store' };
@@ -225,13 +242,13 @@ function stripToken({ accessToken, ...order }) {
 
 async function adminRoute(request, env, ctx, method, parts) {
   const db = env.DB;
-  const token = await requireAdmin(db, request);
+  const token = await requireAdmin(env, request);
   const body = () => readJson(request, ADMIN_BODY_LIMIT);
   const [resource, id, action] = parts;
   const key = id === undefined ? undefined : decodeURIComponent(id);
 
   if (resource === 'logout' && method === 'POST') {
-    await endSession(db, token);
+    await endSession(env, token);
     return empty();
   }
 
