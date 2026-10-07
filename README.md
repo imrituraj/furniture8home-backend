@@ -87,7 +87,6 @@ The Worker is connected to this repo in Cloudflare (Workers & Pages → `furnitu
    | --- | --- |
    | `ADMIN_EMAIL` | The owner's email. Used with the passcode to log in, and receives the new-order and payment alerts. |
    | `ADMIN_PIN` | 6–8 digit passcode. Admin login is refused until both are set. |
-   | `SHOP_EMAIL` | Optional: send order alerts somewhere other than `ADMIN_EMAIL`. |
    | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | From Razorpay Dashboard → Account & Settings → API Keys. Use test-mode keys first. |
    | `RAZORPAY_WEBHOOK_SECRET` | Optional, see step 3. |
    | `GMAIL_APP_PASSWORD` | Turns on order emails, see [Order emails](#order-emails). |
