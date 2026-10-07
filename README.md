@@ -7,7 +7,10 @@ The shop API for the [furniture8home-frontend](https://github.com/imrituraj/furn
 | `/api/products`, `/api/categories`, `/api/config` | Catalog and checkout settings for the storefront |
 | `/api/orders/*` | Checkout and Razorpay payment verification |
 | `/api/razorpay/webhook` | Razorpay payment notifications |
-| `/api/admin/*` | Admin login, orders, products and categories |
+| `/api/orders/track` | Order tracking: order number + phone, rate-limited, no personal details returned |
+| `/api/coupons/check` | Preview a discount code at checkout (rate-limited) |
+| `/api/bookings/*` | Showroom visit availability and booking |
+| `/api/admin/*` | Admin login, orders, products, categories, discount codes and bookings |
 | `/media/*` | Photos uploaded from the admin dashboard |
 
 Data lives in a **Cloudflare D1** database (SQLite). On first use the Worker creates its tables and loads the starter catalog from `seed/`, so a new database needs no setup.
@@ -33,6 +36,10 @@ Emails are sent from Furniture8home@gmail.com. Online orders only alert the owne
 
 Gmail allows about 500 emails a day from one account. If the shop outgrows that, switch to a sending service.
 
+## Scheduled job
+
+Every evening at 6 PM India time (cron `30 12 * * *` in `wrangler.jsonc`) the Worker emails customers a reminder for tomorrow's showroom visits and sends the owner the list.
+
 ## Layout
 
 | Path | What it is |
@@ -42,6 +49,8 @@ Gmail allows about 500 emails a day from one account. If the shop outgrows that,
 | `src/razorpay.js` | Razorpay orders, payment and webhook signature checks |
 | `src/auth.js` | Admin PIN login, sessions, rate limits |
 | `src/mail.js`, `src/emails.js` | Sending through Gmail, and the order email templates and rules |
+| `src/coupons.js` | Discount codes: rules, checks and atomic usage counting |
+| `src/bookings.js` | Showroom visit slots (hourly, 3 per slot) and bookings |
 | `src/media.js` | Stores and serves uploaded photos |
 | `src/schema.js`, `src/seed.js` | Database tables and the first-run starter catalog |
 | `seed/` | Starter products and categories (also used by "Restore Factory Catalog") |

@@ -26,6 +26,10 @@
     // Razorpay key id (public: checkout sends it to every customer's browser). The key secret is a secret.
     "RAZORPAY_KEY_ID": "rzp_live_Tkhv8LYOw7qdS0"
   },
+  // Every evening at 6 PM India time: visit reminders and the owner's list for tomorrow
+  "triggers": {
+    "crons": ["30 12 * * *"]
+  },
   "observability": {
     "enabled": true
   }

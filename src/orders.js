@@ -2,6 +2,7 @@ import { ValidationError, randomHex, safeEqual } from './util.js';
 import { formatPrice, getCatalog, text } from './catalog.js';
 import { getCategories } from './categories.js';
 import { isEmail } from './mail.js';
+import { discountFor, getCoupon, normalizeCode } from './coupons.js';
 
 export const PAYMENT_METHODS = ['razorpay', 'offline', 'whatsapp'];
 export const ORDER_STATUSES = ['new', 'confirmed', 'ready', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -35,16 +36,13 @@ function newOrderId() {
  * Validate a checkout request and build the order. Prices always come from the catalog,
  * never from the client.
  */
-export async function buildOrder(db, body) {
-  const { items, customer = {}, fulfilment = {}, paymentMethod } = body || {};
-
-  if (!PAYMENT_METHODS.includes(paymentMethod)) throw new ValidationError('Choose a payment method');
+/**
+ * Price the cart from the catalog (never from the client). Shared by checkout and the
+ * discount-code check.
+ */
+export async function priceItems(db, items) {
   if (!Array.isArray(items) || items.length === 0) throw new ValidationError('Your cart is empty');
   if (items.length > MAX_LINES) throw new ValidationError('Too many items in one order — please call or WhatsApp us');
-  if (typeof customer !== 'object' || typeof fulfilment !== 'object' || !customer || !fulfilment) {
-    throw new ValidationError('Invalid order details');
-  }
-
   const [catalog, categories] = await Promise.all([getCatalog(db), getCategories(db)]);
   const chaiseCategories = new Set(categories.filter((c) => c.chaise).map((c) => c.id));
   const lines = [];
@@ -71,6 +69,26 @@ export async function buildOrder(db, body) {
       },
     });
   }
+  return { lines, subtotal: lines.reduce((sum, line) => sum + line.lineTotal, 0) };
+}
+
+/**
+ * The discount for a code on this subtotal, or null if no code was entered.
+ */
+export async function applyCoupon(db, couponCode, subtotal) {
+  const code = normalizeCode(couponCode || '');
+  if (!code) return null;
+  return discountFor(await getCoupon(db, code), subtotal);
+}
+
+export async function buildOrder(db, body) {
+  const { items, customer = {}, fulfilment = {}, paymentMethod, couponCode } = body || {};
+
+  if (!PAYMENT_METHODS.includes(paymentMethod)) throw new ValidationError('Choose a payment method');
+  if (typeof customer !== 'object' || typeof fulfilment !== 'object' || !customer || !fulfilment) {
+    throw new ValidationError('Invalid order details');
+  }
+  const { lines, subtotal } = await priceItems(db, items);
 
   const name = singleLine(customer.name, 80);
   const phone = singleLine(customer.phone, 20).replace(/[^\d+]/g, '');
@@ -89,8 +107,9 @@ export async function buildOrder(db, body) {
   }
   const showroom = SHOWROOMS.includes(fulfilment.showroom) ? fulfilment.showroom : SHOWROOMS[0];
 
-  const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
-  if (total <= 0) throw new ValidationError('Order total must be more than ₹0');
+  if (subtotal <= 0) throw new ValidationError('Order total must be more than ₹0');
+  const discount = await applyCoupon(db, couponCode, subtotal);
+  const total = subtotal - (discount?.amount || 0);
 
   const now = new Date().toISOString();
   return {
@@ -98,6 +117,8 @@ export async function buildOrder(db, body) {
     createdAt: now,
     updatedAt: now,
     items: lines,
+    subtotal,
+    discount,
     total,
     totalLabel: formatPrice(total),
     customer: {
@@ -112,8 +133,21 @@ export async function buildOrder(db, body) {
     paymentMethod,
     paymentStatus: 'pending',
     status: 'new',
+    statusHistory: [{ status: 'new', at: now }],
     razorpay: null,
   };
+}
+
+/**
+ * Add a status change to the order's history (shown on the customer's tracking page).
+ * Orders placed before history existed start from their creation time.
+ */
+export function withStatus(order, status, at = new Date().toISOString()) {
+  const history = Array.isArray(order.statusHistory) && order.statusHistory.length
+    ? order.statusHistory
+    : [{ status: 'new', at: order.createdAt }];
+  if (!status || status === order.status) return { ...order, statusHistory: history };
+  return { ...order, status, statusHistory: [...history, { status, at }].slice(-30) };
 }
 
 /**
@@ -150,7 +184,9 @@ export async function findOrderByRazorpayId(db, razorpayOrderId) {
 export async function updateOrder(db, id, updates) {
   const row = await db.prepare('SELECT data FROM orders WHERE id = ?').bind(id).first();
   if (!row) return null;
-  const next = { ...JSON.parse(row.data), ...updates, id, updatedAt: new Date().toISOString() };
+  const current = JSON.parse(row.data);
+  const { status, ...rest } = updates;
+  const next = { ...withStatus(current, status), ...rest, id, updatedAt: new Date().toISOString() };
   await db.prepare('UPDATE orders SET data = ? WHERE id = ?').bind(JSON.stringify(next), id).run();
   return next;
 }
@@ -176,9 +212,8 @@ export async function getOrder(db, id) {
  */
 export async function markOrderPaid(db, order, paymentId) {
   const next = {
-    ...order,
+    ...withStatus(order, order.status === 'new' ? 'confirmed' : order.status),
     paymentStatus: 'paid',
-    status: order.status === 'new' ? 'confirmed' : order.status,
     razorpay: order.razorpay ? { ...order.razorpay, paymentId: paymentId || order.razorpay.paymentId } : order.razorpay,
     updatedAt: new Date().toISOString(),
   };
@@ -187,4 +222,39 @@ export async function markOrderPaid(db, order, paymentId) {
     .bind(JSON.stringify(next), order.id)
     .run();
   return meta.changes > 0 ? next : null;
+}
+
+/**
+ * Find an order for the tracking page: the order number and the phone number used at checkout
+ * must both match. Phones compare on their last 10 digits, so +91 or spaces don't matter.
+ */
+export async function findOrderForTracking(db, orderId, phone) {
+  const id = typeof orderId === 'string' ? orderId.trim().toUpperCase() : '';
+  const digits = String(phone ?? '').replace(/\D/g, '').slice(-10);
+  if (!/^F8H-\d{6}-[0-9A-F]{6}$/.test(id) || digits.length !== 10) return null;
+  const order = await getOrder(db, id);
+  if (!order) return null;
+  return safeEqual(order.customer.phone.replace(/\D/g, '').slice(-10), digits) ? order : null;
+}
+
+/**
+ * What the tracking page shows: progress, items and totals. No address, phone or email.
+ */
+export function trackingView(order) {
+  const history = withStatus(order).statusHistory;
+  return {
+    id: order.id,
+    createdAt: order.createdAt,
+    status: order.status,
+    statusHistory: history,
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
+    fulfilment: order.fulfilment,
+    items: order.items.map(({ id, name, img, qty, unitPrice, lineTotal, options }) => ({ id, name, img, qty, unitPrice, lineTotal, options })),
+    subtotal: order.subtotal ?? order.total,
+    discount: order.discount || null,
+    total: order.total,
+    totalLabel: order.totalLabel,
+    customerName: order.customer.name.split(' ')[0],
+  };
 }

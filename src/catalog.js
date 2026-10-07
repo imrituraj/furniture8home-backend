@@ -5,6 +5,7 @@ import { storeImage } from './media.js';
 const MAX_PRICE = 10_000_000; // ₹1 crore — well above any real piece, guards against typos and overflow
 const MAX_PRODUCTS = 2000;
 const MAX_FEATURES = 20;
+const MAX_GALLERY = 8; // extra photos besides the main one
 const DEFAULT_IMG = 'images/chairs/B612_20221205_111922_652.jpg';
 
 /**
@@ -86,6 +87,10 @@ export function normalizeProduct(product, existingList = []) {
     rating: rating > 0 && rating <= 5 ? Math.round(rating * 10) / 10 : 4.9,
     reviews: reviews >= 0 && reviews < 1_000_000 ? reviews : 12,
     img: safeImage(product.img),
+    // Extra photos for the product's gallery (the main photo is `img`)
+    images: Array.isArray(product.images)
+      ? [...new Set(product.images.filter((src) => typeof src === 'string' && src.trim()).map((src) => safeImage(src)))].slice(0, MAX_GALLERY)
+      : [],
     desc: text(product.desc, 2000),
     dims: text(product.dims, 300),
     material: text(product.material, 300),
@@ -129,7 +134,9 @@ async function assertCategory(db, cat) {
 }
 
 async function withStoredImage(db, product) {
-  return { ...product, img: await storeImage(db, product.img) };
+  const images = [];
+  for (const src of product.images || []) images.push(await storeImage(db, src));
+  return { ...product, img: await storeImage(db, product.img), images };
 }
 
 export async function updateProduct(db, id, updates) {

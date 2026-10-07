@@ -23,18 +23,35 @@ import {
   buildOrder,
   findOrderByRazorpayId,
   getOrders,
+  findOrderForTracking,
+  applyCoupon,
   getOrder,
   getOwnOrder,
   markOrderPaid,
+  priceItems,
   publicOrder,
+  trackingView,
   saveOrder,
   updateOrder,
 } from './orders.js';
 import { createRazorpayOrder, fetchPayment, razorpayConfig, verifyPaymentSignature, verifyWebhookSignature } from './razorpay.js';
 import { MIN_PASSWORD_LENGTH, addHit, adminEmail, adminPassword, createSession, credentialsMatch, endSession, hits, requireAdmin } from './auth.js';
 import { serveMedia } from './media.js';
+import { addCoupon, deleteCoupon, getCoupons, redeemCoupon, updateCoupon } from './coupons.js';
+import { availability, createBooking, getBookings, getBookingsOn, markReminderSent, tomorrowIST, updateBooking } from './bookings.js';
 import { ensureSeeded, resetCatalog } from './seed.js';
-import { NOTIFY_STATUSES, deliver, loginAlertEmail, loginNoticeEmail, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
+import {
+  NOTIFY_STATUSES,
+  bookingEmails,
+  bookingReminderEmail,
+  deliver,
+  loginAlertEmail,
+  loginNoticeEmail,
+  orderPlacedEmails,
+  paymentReceivedEmails,
+  statusEmails,
+  visitsSummaryEmail,
+} from './emails.js';
 
 const PUBLIC_BODY_LIMIT = 20_000;
 const WEBHOOK_BODY_LIMIT = 1_000_000;
@@ -45,7 +62,7 @@ const ORDER_LIMITS = [
   { key: () => 'orders:*', max: 60, windowMs: 60 * 60 * 1000, message: 'We are receiving a lot of orders right now. Please try again shortly, or WhatsApp us.' },
 ];
 const ORDERS_PER_PHONE_PER_DAY = 10;
-const ADMIN_BODY_LIMIT = 3_000_000; // photos are resized in the admin before upload
+const ADMIN_BODY_LIMIT = 8_000_000; // a product with a full gallery; photos are resized in the admin first
 
 // ---------- Payments ----------
 
@@ -97,6 +114,8 @@ async function placeOrder(request, env, ctx) {
     }
   }
 
+  // Count the code's use only once the order is really being created
+  if (order.discount) await redeemCoupon(db, order.discount.code, order.customer.phone, order.id);
   const accessToken = await saveOrder(db, order);
   deliver(env, ctx, orderPlacedEmails(env, order));
   return json(
@@ -107,6 +126,62 @@ async function placeOrder(request, env, ctx) {
     },
     201,
   );
+}
+
+/**
+ * Book a showroom visit. Limited per device so nobody can fill the calendar.
+ */
+async function bookVisit(request, env, ctx) {
+  const db = env.DB;
+  const ipKey = `bookings:${clientIp(request)}`;
+  if ((await hits(db, ipKey)) >= 5) throw new HttpError(429, 'Too many bookings from this device. Please call or WhatsApp us.');
+  await addHit(db, ipKey, 60 * 60 * 1000).run();
+  const booking = await createBooking(db, await readJson(request, PUBLIC_BODY_LIMIT));
+  deliver(env, ctx, bookingEmails(env, booking));
+  const { id, showroom, date, slot, name } = booking;
+  return json({ id, showroom, date, slot, name }, 201, { 'Cache-Control': 'no-store' });
+}
+
+/**
+ * Every evening: remind customers about tomorrow's visits, and send the owner the list.
+ */
+async function sendVisitReminders(env, ctx) {
+  await ensureSeeded(env.DB);
+  const date = tomorrowIST();
+  const bookings = await getBookingsOn(env.DB, date);
+  if (bookings.length === 0) return;
+  const reminders = bookings.filter((b) => b.email && !b.reminderSent);
+  deliver(env, ctx, [visitsSummaryEmail(env, date, bookings), ...reminders.map(bookingReminderEmail)]);
+  for (const b of reminders) await markReminderSent(env.DB, b.id);
+}
+
+/**
+ * Preview a discount code at checkout. Rate-limited so codes can't be guessed.
+ */
+async function checkCoupon(request, env) {
+  const db = env.DB;
+  const ipKey = `coupon:${clientIp(request)}`;
+  if ((await hits(db, ipKey)) >= 20) throw new HttpError(429, 'Too many tries. Please try again in a few minutes.');
+  await addHit(db, ipKey, 10 * 60 * 1000).run();
+  const body = await readJson(request, PUBLIC_BODY_LIMIT);
+  const { subtotal } = await priceItems(db, body?.items);
+  const discount = await applyCoupon(db, body?.code, subtotal);
+  if (!discount) throw new ValidationError('Enter a discount code');
+  return json({ ...discount, subtotal, total: subtotal - discount.amount }, 200, { 'Cache-Control': 'no-store' });
+}
+
+/**
+ * Order tracking: order number + phone. Rate-limited so order numbers can't be scanned.
+ */
+async function trackOrder(request, env) {
+  const db = env.DB;
+  const ipKey = `track:${clientIp(request)}`;
+  if ((await hits(db, ipKey)) >= 20) throw new HttpError(429, 'Too many lookups. Please try again in a few minutes.');
+  await addHit(db, ipKey, 10 * 60 * 1000).run();
+  const body = await readJson(request, 1_000);
+  const order = await findOrderForTracking(db, body?.orderId, body?.phone);
+  if (!order) throw new HttpError(404, "We couldn't find an order with that number and phone. Check both and try again.");
+  return json(absoluteMedia(trackingView(order), new URL(request.url).origin), 200, { 'Cache-Control': 'no-store' });
 }
 
 async function findOwnOrder(env, id, body) {
@@ -291,6 +366,29 @@ async function adminRoute(request, env, ctx, method, parts) {
     }
   }
 
+  if (resource === 'bookings') {
+    if (!key && method === 'GET') return adminJson(await getBookings(db));
+    if (key && method === 'PATCH') {
+      const updated = await updateBooking(db, key, (await body()) || {});
+      if (!updated) throw new HttpError(404, 'Booking not found');
+      return adminJson(updated);
+    }
+  }
+
+  if (resource === 'coupons') {
+    if (!key && method === 'GET') return adminJson(await getCoupons(db));
+    if (!key && method === 'POST') return adminJson(await addCoupon(db, await body()), 201);
+    if (key && method === 'PATCH') {
+      const updated = await updateCoupon(db, key, await body());
+      if (!updated) throw new HttpError(404, 'Discount code not found');
+      return adminJson(updated);
+    }
+    if (key && method === 'DELETE') {
+      if (!(await deleteCoupon(db, key))) throw new HttpError(404, 'Discount code not found');
+      return empty();
+    }
+  }
+
   if (resource === 'orders') {
     if (!key && method === 'GET') return adminJson((await getOrders(db)).map(stripToken));
     if (key && method === 'PATCH') {
@@ -369,8 +467,11 @@ function absoluteMedia(value, origin) {
   if (Array.isArray(value)) return value.map((item) => absoluteMedia(item, origin));
   if (!value || typeof value !== 'object') return value;
   const out = {};
+  const absolute = (src) => (typeof src === 'string' && src.startsWith('media/') ? `${origin}/${src}` : src);
   for (const [key, item] of Object.entries(value)) {
-    out[key] = key === 'img' && typeof item === 'string' && item.startsWith('media/') ? `${origin}/${item}` : absoluteMedia(item, origin);
+    if (key === 'img') out[key] = absolute(item);
+    else if (key === 'images' && Array.isArray(item)) out[key] = item.map(absolute);
+    else out[key] = absoluteMedia(item, origin);
   }
   return out;
 }
@@ -387,6 +488,17 @@ async function publicRoute(request, env, ctx, parts) {
   if (parts[0] === 'config' && parts.length === 1 && method === 'GET') {
     const rzp = razorpayConfig(env);
     return json({ razorpay: rzp.enabled ? { keyId: rzp.keyId } : null });
+  }
+  if (parts[0] === 'bookings' && parts[1] === 'availability' && parts.length === 2 && method === 'GET') {
+    const url = new URL(request.url);
+    return json(await availability(env.DB, url.searchParams.get('showroom'), url.searchParams.get('date')), 200, { 'Cache-Control': 'no-store' });
+  }
+  if (parts[0] === 'bookings' && parts.length === 1 && method === 'POST') return bookVisit(request, env, ctx);
+  if (parts[0] === 'coupons' && parts[1] === 'check' && parts.length === 2 && method === 'POST') {
+    return checkCoupon(request, env);
+  }
+  if (parts[0] === 'orders' && parts[1] === 'track' && parts.length === 2 && method === 'POST') {
+    return trackOrder(request, env);
   }
   if (parts[0] === 'orders' && method === 'POST') {
     let response = null;
@@ -446,6 +558,11 @@ async function route(request, env, ctx) {
 }
 
 export default {
+  // Cron trigger (wrangler.jsonc): 12:30 UTC = 6 PM in India
+  async scheduled(event, env, ctx) {
+    await sendVisitReminders(env, ctx);
+  },
+
   async fetch(request, env, ctx) {
     try {
       return await route(request, env, ctx);

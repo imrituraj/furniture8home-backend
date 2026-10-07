@@ -47,6 +47,30 @@ CREATE TABLE IF NOT EXISTS counters (
   reset_at INTEGER NOT NULL
 );
 
+-- Discount codes, and who used them (for per-phone limits)
+CREATE TABLE IF NOT EXISTS coupons (
+  code TEXT PRIMARY KEY,
+  data TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS coupon_redemptions (
+  code TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  order_id TEXT NOT NULL,
+  at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS coupon_redemptions_by_code_phone ON coupon_redemptions (code, phone);
+
+-- Showroom visit bookings
+CREATE TABLE IF NOT EXISTS bookings (
+  id TEXT PRIMARY KEY,
+  date TEXT NOT NULL,
+  showroom TEXT NOT NULL,
+  slot TEXT NOT NULL,
+  status TEXT NOT NULL,
+  data TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS bookings_by_date ON bookings (date, showroom, slot);
+
 -- One-off flags, e.g. whether the starter catalog has been loaded
 CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY,
