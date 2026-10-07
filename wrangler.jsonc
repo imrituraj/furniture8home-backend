@@ -30,8 +30,8 @@
     "enabled": true
   }
   // Secrets (set with `npx wrangler secret put NAME`, or in the Cloudflare dashboard):
-  //   ADMIN_EMAIL               the owner's email: admin login (with ADMIN_PIN) and new-order/payment alerts
-  //   ADMIN_PIN                 6–8 digit passcode; with ADMIN_EMAIL, required to log in to the admin
+  //   ADMIN_EMAIL               the owner's email: admin login (with ADMIN_PASSWORD) and all owner alerts
+  //   ADMIN_PASSWORD            admin password, at least 10 characters (the older ADMIN_PIN works until it's set)
   //   RAZORPAY_KEY_SECRET       online payment is hidden at checkout until this is set
   //   RAZORPAY_WEBHOOK_SECRET   optional, for https://<backend>/api/razorpay/webhook
   //   GMAIL_APP_PASSWORD        Google app password for GMAIL_USER; order emails are off until set

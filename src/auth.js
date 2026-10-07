@@ -22,15 +22,20 @@ export function addHit(db, key, windowMs) {
     .bind(key, now + windowMs, now);
 }
 
-// ---------- Admin PIN + sessions ----------
+// ---------- Admin password + sessions ----------
+
+// A deployed Worker refuses all admin logins until a long enough password is set
+export const MIN_PASSWORD_LENGTH = 10;
 
 /**
- * The admin PIN comes from the ADMIN_PIN secret. Local dev (wrangler dev) falls back to 8888;
- * a deployed Worker refuses to log anyone in until a 6–8 digit PIN is set.
+ * The admin password: the ADMIN_PASSWORD secret (at least 10 characters). Until it's set, the
+ * older ADMIN_PIN (6–8 digits) still works as the password. Local dev falls back to "password1234".
  */
-export function adminPin(env) {
-  if (env.ADMIN_PIN) return /^\d{6,8}$/.test(env.ADMIN_PIN) || env.ENVIRONMENT === 'development' ? env.ADMIN_PIN : null;
-  return env.ENVIRONMENT === 'development' ? '8888' : null;
+export function adminPassword(env) {
+  const dev = env.ENVIRONMENT === 'development';
+  if (env.ADMIN_PASSWORD) return env.ADMIN_PASSWORD.length >= MIN_PASSWORD_LENGTH || dev ? env.ADMIN_PASSWORD : null;
+  if (env.ADMIN_PIN) return /^\d{6,8}$/.test(env.ADMIN_PIN) || dev ? env.ADMIN_PIN : null;
+  return dev ? 'password1234' : null;
 }
 
 /**
@@ -43,26 +48,27 @@ export function adminEmail(env) {
 }
 
 /**
- * Both the admin email (any capitalisation) and the passcode must match.
+ * Both the admin email (any capitalisation) and the password must match.
  */
-export async function credentialsMatch(env, enteredEmail, enteredPin) {
-  const pin = adminPin(env);
+export async function credentialsMatch(env, enteredEmail, enteredPassword) {
+  const password = adminPassword(env);
   const email = adminEmail(env);
-  if (!pin || !email) return false;
-  if (typeof enteredEmail !== 'string' || (typeof enteredPin !== 'string' && typeof enteredPin !== 'number')) return false;
+  if (!password || !email) return false;
+  if (typeof enteredEmail !== 'string' || (typeof enteredPassword !== 'string' && typeof enteredPassword !== 'number')) return false;
   // Compare fixed-length digests so neither value nor its length leaks through timing.
   // Check both before deciding, so the response time doesn't reveal which one was wrong.
   const emailOk = safeEqual(await sha256Hex(email), await sha256Hex(enteredEmail.trim().toLowerCase()));
-  const pinOk = safeEqual(await sha256Hex(pin), await sha256Hex(String(enteredPin).trim()));
-  return emailOk && pinOk;
+  // Passwords are compared exactly (spaces and capitals count)
+  const passwordOk = safeEqual(await sha256Hex(password), await sha256Hex(String(enteredPassword)));
+  return emailOk && passwordOk;
 }
 
 /**
- * Sessions are stored as a hash of the token *and* the current admin email + passcode.
- * Changing ADMIN_PIN (or ADMIN_EMAIL) therefore logs out every device at once.
+ * Sessions are stored as a hash of the token *and* the current admin email + password.
+ * Changing ADMIN_PASSWORD (or ADMIN_EMAIL) therefore logs out every device at once.
  */
 async function sessionKey(env, token) {
-  return sha256Hex(`${token}|${await sha256Hex(`${adminEmail(env)}|${adminPin(env)}`)}`);
+  return sha256Hex(`${token}|${await sha256Hex(`${adminEmail(env)}|${adminPassword(env)}`)}`);
 }
 
 export async function createSession(env) {
@@ -85,7 +91,7 @@ function bearer(request) {
 
 export async function requireAdmin(env, request) {
   const token = bearer(request);
-  if (token && adminPin(env) && adminEmail(env)) {
+  if (token && adminPassword(env) && adminEmail(env)) {
     const row = await env.DB.prepare('SELECT expires_at FROM sessions WHERE token_hash = ?').bind(await sessionKey(env, token)).first();
     if (row && row.expires_at > Date.now()) return token;
   }
