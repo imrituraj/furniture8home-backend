@@ -309,17 +309,79 @@ export function deliver(env, ctx, emails) {
   if (sends.length) ctx.waitUntil(Promise.all(sends));
 }
 
+// ---------- Admin login emails ----------
+
+/**
+ * Turn a user-agent string into "Chrome 128 on Windows 11 (desktop)".
+ */
+export function describeBrowser(ua = '') {
+  const pick = (re) => re.exec(ua)?.[1];
+  const browser =
+    (pick(/Edg(?:A|iOS)?\/(\d+)/) && `Edge ${pick(/Edg(?:A|iOS)?\/(\d+)/)}`) ||
+    (pick(/OPR\/(\d+)/) && `Opera ${pick(/OPR\/(\d+)/)}`) ||
+    (pick(/SamsungBrowser\/(\d+)/) && `Samsung Internet ${pick(/SamsungBrowser\/(\d+)/)}`) ||
+    (pick(/(?:Firefox|FxiOS)\/(\d+)/) && `Firefox ${pick(/(?:Firefox|FxiOS)\/(\d+)/)}`) ||
+    (pick(/(?:Chrome|CriOS)\/(\d+)/) && `Chrome ${pick(/(?:Chrome|CriOS)\/(\d+)/)}`) ||
+    (/Safari\//.test(ua) && `Safari ${pick(/Version\/(\d+(?:\.\d+)?)/) || ''}`.trim()) ||
+    (/curl|wget|python|postman|insomnia|httpie|axios|node-fetch|go-http/i.test(ua) && `Script / API tool (${ua.split(/[\s/]/)[0]})`) ||
+    'Unknown browser';
+  const os =
+    (/iPhone|iPad|iPod/.test(ua) && `iOS ${(pick(/OS (\d+[_.]\d+)/) || '').replace('_', '.')}`.trim()) ||
+    (/Android/.test(ua) && `Android ${pick(/Android (\d+(?:\.\d+)?)/) || ''}`.trim()) ||
+    (/Windows NT 10/.test(ua) && 'Windows 10/11') ||
+    (/Windows/.test(ua) && 'Windows') ||
+    (/Mac OS X|Macintosh/.test(ua) && 'macOS') ||
+    (/CrOS/.test(ua) && 'ChromeOS') ||
+    (/Linux/.test(ua) && 'Linux') ||
+    'unknown system';
+  const device = /iPad|Tablet/.test(ua) ? 'tablet' : /Mobi|iPhone|Android/.test(ua) ? 'phone' : 'computer';
+  return `${browser} on ${os} (${device})`;
+}
+
+function loginDetails(info) {
+  const when = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'medium' });
+  const place = [info.city, info.region, info.country].filter(Boolean).join(', ');
+  return [
+    ['Time', `${when} IST`],
+    ['Email used', info.email || '(none)'],
+    ['IP address', info.ip],
+    ['Approx. location', place || 'Unknown'],
+    ['Network', info.network || 'Unknown'],
+    ['Their time zone', info.timezone || 'Unknown'],
+    ['Browser', describeBrowser(info.userAgent)],
+    ['Language', info.language || 'Unknown'],
+    ['Full browser string', info.userAgent || 'None sent'],
+  ];
+}
+
+const NOT_YOU =
+  "If this wasn't you, change ADMIN_PIN in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets) straight away. That logs out every device instantly.";
+
+/**
+ * Sent on every successful admin login.
+ */
+export function loginNoticeEmail(env, info) {
+  const details = loginDetails(info);
+  const place = [info.city, info.country].filter(Boolean).join(', ');
+  return {
+    to: shopEmail(env),
+    subject: `Admin login${place ? ` from ${place}` : ''} · ${describeBrowser(info.userAgent)} · Furniture8home`,
+    text: ['Someone just logged in to the Furniture8home admin.', '', ...details.map(([k, v]) => `${k}: ${v}`), '', NOT_YOU].join('\n'),
+    html: layout({
+      preheader: `New admin login from ${info.ip}`,
+      heading: 'New admin login',
+      intro: 'Someone just logged in to the Furniture8home admin with the correct email and passcode.',
+      content: detailsHtml(details.map(([k, v]) => [k, escapeHtml(v)])),
+      footer: escapeHtml(NOT_YOU),
+    }),
+  };
+}
+
 /**
  * Tell the owner someone keeps failing to log in to the admin (sent at most once per lockout).
  */
-export function loginAlertEmail(env, { ip, country, userAgent }) {
-  const when = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
-  const details = [
-    ['Time', `${when} IST`],
-    ['IP address', ip],
-    ['Country', country || 'Unknown'],
-    ['Device', userAgent || 'Unknown'],
-  ];
+export function loginAlertEmail(env, info) {
+  const details = loginDetails(info);
   return {
     to: shopEmail(env),
     subject: 'Security alert: repeated failed admin logins · Furniture8home',
@@ -328,14 +390,14 @@ export function loginAlertEmail(env, { ip, country, userAgent }) {
       '',
       ...details.map(([k, v]) => `${k}: ${v}`),
       '',
-      'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PIN in Cloudflare (Worker → Settings → Variables and Secrets).',
+      'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PIN in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets).',
     ].join('\n'),
     html: layout({
       preheader: 'Repeated failed admin logins were blocked.',
       heading: 'Repeated failed admin logins',
       intro: 'Someone has repeatedly entered a wrong email or passcode on the Furniture8home admin. Login is locked for them for 15 minutes, and nothing was accessed.',
       content: detailsHtml(details.map(([k, v]) => [k, escapeHtml(v)])),
-      footer: 'If this was you, wait 15 minutes and try again. If not, consider changing ADMIN_PIN in Cloudflare (Worker → Settings → Variables and Secrets).',
+      footer: 'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PIN in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets).',
     }),
   };
 }

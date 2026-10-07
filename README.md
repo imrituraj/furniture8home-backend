@@ -53,7 +53,9 @@ Gmail allows about 500 emails a day from one account. If the shop outgrows that,
 - Customers can only see or update their own order, using a secret returned at checkout.
 - Admin login needs the admin email and a 6–8 digit passcode (the `ADMIN_EMAIL` and `ADMIN_PIN` secrets); the error never says which was wrong. Failed logins are rate-limited per device and site-wide. Sessions last 12 hours and use a bearer token, not cookies.
 - Browsers may only call the public API from `STOREFRONT_ORIGIN` (and the admin), and the admin API only from `ADMIN_ORIGIN`. This only limits browsers; every endpoint is safe to call directly (curl, Postman), because nothing relies on CORS for protection.
+- Every successful admin login emails the owner: time, IP, approximate location, network, browser, device and the email used (scripts like Postman or curl are labelled as such).
 - After 5 failed admin logins from a device (or 30 site-wide) login is locked for 15 minutes, and the owner gets a security-alert email.
+- Sessions are tied to the current `ADMIN_EMAIL` and `ADMIN_PIN`: changing either logs out every device immediately.
 - Order flooding is limited per device (15 per 10 minutes), per phone number (10 a day) and for the whole shop (60 an hour).
 - Email can't be abused to spam people: at most 8 emails a day to any one address, 300 customer emails a day, and 450 in total (Gmail's limit is about 500).
 - Customer names, phones and emails can't contain line breaks, so they can't inject email headers.

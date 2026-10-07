@@ -57,12 +57,21 @@ export async function credentialsMatch(env, enteredEmail, enteredPin) {
   return emailOk && pinOk;
 }
 
-export async function createSession(db) {
+/**
+ * Sessions are stored as a hash of the token *and* the current admin email + passcode.
+ * Changing ADMIN_PIN (or ADMIN_EMAIL) therefore logs out every device at once.
+ */
+async function sessionKey(env, token) {
+  return sha256Hex(`${token}|${await sha256Hex(`${adminEmail(env)}|${adminPin(env)}`)}`);
+}
+
+export async function createSession(env) {
+  const db = env.DB;
   const token = randomHex(32);
   const now = Date.now();
   await db.batch([
     db.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(now),
-    db.prepare('INSERT INTO sessions (token_hash, expires_at) VALUES (?, ?)').bind(await sha256Hex(token), now + SESSION_TTL_MS),
+    db.prepare('INSERT INTO sessions (token_hash, expires_at) VALUES (?, ?)').bind(await sessionKey(env, token), now + SESSION_TTL_MS),
     // Keep only the newest sessions
     db.prepare('DELETE FROM sessions WHERE token_hash NOT IN (SELECT token_hash FROM sessions ORDER BY expires_at DESC LIMIT ?)').bind(MAX_SESSIONS),
   ]);
@@ -74,15 +83,15 @@ function bearer(request) {
   return header.startsWith('Bearer ') ? header.slice(7) : '';
 }
 
-export async function requireAdmin(db, request) {
+export async function requireAdmin(env, request) {
   const token = bearer(request);
-  if (token) {
-    const row = await db.prepare('SELECT expires_at FROM sessions WHERE token_hash = ?').bind(await sha256Hex(token)).first();
+  if (token && adminPin(env) && adminEmail(env)) {
+    const row = await env.DB.prepare('SELECT expires_at FROM sessions WHERE token_hash = ?').bind(await sessionKey(env, token)).first();
     if (row && row.expires_at > Date.now()) return token;
   }
   throw new HttpError(401, 'Session expired. Please log in again.');
 }
 
-export async function endSession(db, token) {
-  await db.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(await sha256Hex(token)).run();
+export async function endSession(env, token) {
+  await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(await sessionKey(env, token)).run();
 }
