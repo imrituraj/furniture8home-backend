@@ -31,6 +31,20 @@ function shopEmail(env) {
   return isEmail(address) ? address : null;
 }
 
+// The storefront's address (the first STOREFRONT_ORIGIN), for links customers click
+function storefrontUrl(env) {
+  const origin = String(env.STOREFRONT_ORIGIN || '').split(',')[0].trim();
+  return origin && origin !== '*' ? origin : 'https://furniture8home.com';
+}
+
+export function trackingLink(env, order) {
+  return `${storefrontUrl(env)}/?track=${encodeURIComponent(order.id)}`;
+}
+
+function buttonHtml(href, label) {
+  return `<p style="margin:20px 0 0;"><a href="${escapeHtml(href)}" style="display:inline-block;background:#2e3b2b;color:#fffdf9;text-decoration:none;padding:11px 20px;border-radius:999px;font-weight:600;">${escapeHtml(label)}</a></p>`;
+}
+
 function adminLink(env) {
   const origin = String(env.ADMIN_ORIGIN || '').split(',')[0].trim();
   return origin ? `${origin}/#orders` : null;
@@ -98,6 +112,8 @@ function itemsHtml(order) {
     .join('');
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:8px 0 4px;">
     ${rows}
+    ${order.discount ? `<tr><td style="padding:10px 0 0;color:#7f7568;">Subtotal</td><td style="padding:10px 0 0;text-align:right;color:#7f7568;">${escapeHtml(formatPrice(order.subtotal))}</td></tr>
+    <tr><td style="padding:4px 0 0;color:#2e7d4f;">Discount (${escapeHtml(order.discount.code)})</td><td style="padding:4px 0 0;text-align:right;color:#2e7d4f;">−${escapeHtml(formatPrice(order.discount.amount))}</td></tr>` : ''}
     <tr><td style="padding:12px 0;font-weight:700;color:#1d1a16;">Total</td><td style="padding:12px 0;text-align:right;font-size:18px;font-weight:700;color:#1d1a16;">${escapeHtml(order.totalLabel)}</td></tr>
   </table>`;
 }
@@ -140,7 +156,7 @@ function customerSummary(order) {
   ]);
 }
 
-function customerText(order, heading, intro) {
+function customerText(order, heading, intro, link) {
   return [
     heading,
     '',
@@ -148,10 +164,12 @@ function customerText(order, heading, intro) {
     '',
     `Order: ${order.id}`,
     ...order.items.map((i) => `- ${i.name}${optionsText(i) ? ` (${optionsText(i)})` : ''}: ${i.qty} × ${formatPrice(i.unitPrice)} = ${formatPrice(i.lineTotal)}`),
+    ...(order.discount ? [`Subtotal: ${formatPrice(order.subtotal)}`, `Discount (${order.discount.code}): −${formatPrice(order.discount.amount)}`] : []),
     `Total: ${order.totalLabel}`,
     `Payment: ${METHOD_LABELS[order.paymentMethod]}${order.paymentStatus === 'paid' ? ' · Paid' : ''}`,
     fulfilmentText(order),
     '',
+    `Track your order: ${link}`,
     `Questions? Reply to this email, or call / WhatsApp ${SHOP_PHONE}.`,
     'Furniture8home · Maligaon & Paschim Boragaon, Guwahati',
   ].join('\n');
@@ -164,12 +182,12 @@ function customerEmail(env, order, { subject, heading, intro, pass = true }) {
   return {
     to: order.customer.email,
     subject,
-    text: customerText(order, heading, intro),
+    text: customerText(order, heading, intro, trackingLink(env, order)),
     html: layout({
       preheader: intro,
       heading,
       intro: escapeHtml(intro),
-      content: `${qr ? passHtml(order) : ''}${itemsHtml(order)}${customerSummary(order)}`,
+      content: `${qr ? passHtml(order) : ''}${itemsHtml(order)}${customerSummary(order)}${buttonHtml(trackingLink(env, order), 'Track your order')}`,
       footer: CUSTOMER_FOOTER,
     }),
     inlineImages: qr ? [qr] : [],
@@ -401,6 +419,119 @@ export function loginAlertEmail(env, info) {
       intro: 'Someone has repeatedly entered a wrong email or password on the Furniture8home admin. Login is locked for them for 15 minutes, and nothing was accessed.',
       content: detailsHtml(details.map(([k, v]) => [k, escapeHtml(v)])),
       footer: 'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PASSWORD in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets).',
+    }),
+  };
+}
+
+// ---------- Showroom visits ----------
+
+function visitWhen(booking) {
+  const day = new Date(`${booking.date}T12:00:00+05:30`).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', weekday: 'long', day: 'numeric', month: 'long' });
+  const [h, m] = booking.slot.split(':').map(Number);
+  const time = `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+  return `${day} at ${time}`;
+}
+
+function visitDetails(booking) {
+  return [
+    ['Booking', `<strong>${escapeHtml(booking.id)}</strong>`],
+    ['When', escapeHtml(visitWhen(booking))],
+    ['Showroom', escapeHtml(`${booking.showroom}: ${SHOWROOMS[booking.showroom] || 'Guwahati'}`)],
+  ];
+}
+
+/**
+ * New booking: alert the owner, confirm to the customer.
+ */
+export function bookingEmails(env, booking) {
+  const alert = {
+    to: shopEmail(env),
+    replyTo: isEmail(booking.email) ? booking.email : undefined,
+    subject: `Showroom visit: ${booking.name}, ${visitWhen(booking)} at ${booking.showroom}`,
+    text: [
+      `New showroom visit booked (${booking.id})`,
+      '',
+      `When: ${visitWhen(booking)}`,
+      `Showroom: ${booking.showroom}`,
+      `Name: ${booking.name}`,
+      `Phone: ${booking.phone}`,
+      ...(booking.email ? [`Email: ${booking.email}`] : []),
+      ...(booking.notes ? [`Looking for: ${booking.notes}`] : []),
+    ].join('\n'),
+    html: layout({
+      preheader: `${booking.name} is visiting ${booking.showroom}`,
+      heading: 'New showroom visit',
+      intro: 'A customer has booked a visit. Give them a call if you want to prepare anything.',
+      content: detailsHtml([
+        ...visitDetails(booking),
+        ['Name', escapeHtml(booking.name)],
+        ['Phone', `<a href="tel:+91${escapeHtml(booking.phone.slice(-10))}" style="color:#a86a32;">${escapeHtml(booking.phone)}</a> · <a href="https://wa.me/91${escapeHtml(booking.phone.slice(-10))}" style="color:#a86a32;">WhatsApp</a>`],
+        ['Email', booking.email ? escapeHtml(booking.email) : ''],
+        ['Looking for', booking.notes ? escapeHtml(booking.notes) : ''],
+      ]),
+      footer: 'Sent automatically by the Furniture8home shop. Manage visits in the admin\'s Bookings tab.',
+    }),
+  };
+  const emails = [alert];
+  if (isEmail(booking.email)) {
+    emails.push({
+      to: booking.email,
+      subject: `Your visit to Furniture8home ${booking.showroom}, ${visitWhen(booking)}`,
+      text: [
+        `Thank you, ${booking.name}! Your showroom visit is booked.`,
+        '',
+        `When: ${visitWhen(booking)}`,
+        `Where: Furniture8home ${booking.showroom}, ${SHOWROOMS[booking.showroom] || 'Guwahati'}`,
+        `Booking: ${booking.id}`,
+        '',
+        "We'll send you a reminder the evening before. To change the time, reply to this email or WhatsApp 60025 84075.",
+      ].join('\n'),
+      html: layout({
+        preheader: `See you ${visitWhen(booking)}`,
+        heading: `See you soon, ${booking.name.split(' ')[0]}!`,
+        intro: 'Your showroom visit is booked. Sit on the sofas, feel the fabrics and talk through custom sizes with our team.',
+        content: `${detailsHtml(visitDetails(booking))}${buttonHtml(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Furniture8home ${SHOWROOMS[booking.showroom] || booking.showroom}`)}`, 'Get directions')}`,
+        footer: `We'll send you a reminder the evening before. To change the time, reply to this email or WhatsApp <a href="${SHOP_WHATSAPP}" style="color:#a86a32;">${SHOP_PHONE}</a>.`,
+      }),
+    });
+  }
+  return emails;
+}
+
+export function bookingReminderEmail(booking) {
+  return {
+    to: booking.email,
+    subject: `Reminder: your Furniture8home visit tomorrow at ${visitWhen(booking).split(' at ')[1]}`,
+    text: [
+      `Hi ${booking.name}, a reminder that you're visiting Furniture8home ${booking.showroom} tomorrow.`,
+      '',
+      `When: ${visitWhen(booking)}`,
+      `Where: ${SHOWROOMS[booking.showroom] || booking.showroom}`,
+      '',
+      "Can't make it? Reply to this email or WhatsApp 60025 84075.",
+    ].join('\n'),
+    html: layout({
+      preheader: `Your visit is tomorrow, ${visitWhen(booking)}`,
+      heading: 'See you tomorrow',
+      intro: `A quick reminder that you're visiting Furniture8home ${booking.showroom} tomorrow.`,
+      content: detailsHtml(visitDetails(booking)),
+      footer: `Can't make it? Reply to this email or WhatsApp <a href="${SHOP_WHATSAPP}" style="color:#a86a32;">${SHOP_PHONE}</a>.`,
+    }),
+  };
+}
+
+export function visitsSummaryEmail(env, date, bookings) {
+  const rows = bookings.map((b) => `${b.slot} · ${b.showroom} · ${b.name} (${b.phone})${b.notes ? ` · ${b.notes}` : ''}`);
+  return {
+    to: shopEmail(env),
+    subject: `Tomorrow's showroom visits: ${bookings.length}`,
+    text: [`Showroom visits on ${date}:`, '', ...rows].join('\n'),
+    html: layout({
+      preheader: `${bookings.length} visit${bookings.length === 1 ? '' : 's'} booked for tomorrow`,
+      heading: "Tomorrow's showroom visits",
+      intro: `${bookings.length} visit${bookings.length === 1 ? '' : 's'} booked.`,
+      content: detailsHtml(bookings.map((b) => [`${b.slot} · ${b.showroom}`, `${escapeHtml(b.name)} · <a href="tel:+91${escapeHtml(b.phone.slice(-10))}" style="color:#a86a32;">${escapeHtml(b.phone)}</a>${b.notes ? `<br><span style="color:#7f7568;">${escapeHtml(b.notes)}</span>` : ''}`])),
+      footer: 'Sent automatically every evening when visits are booked for the next day.',
     }),
   };
 }
