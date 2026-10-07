@@ -22,9 +22,10 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 }
 
-// The owner's inbox for new-order and payment alerts: SHOP_EMAIL, else the admin's email, else the sender
+// The owner's inbox (ADMIN_EMAIL) gets every new-order, payment and login alert.
+// Falls back to the sending address only if ADMIN_EMAIL isn't set.
 function shopEmail(env) {
-  const address = (env.SHOP_EMAIL || env.ADMIN_EMAIL || mailConfig(env).user || '').trim();
+  const address = (env.ADMIN_EMAIL || mailConfig(env).user || '').trim();
   return isEmail(address) ? address : null;
 }
 
