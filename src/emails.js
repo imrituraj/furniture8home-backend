@@ -3,6 +3,8 @@ import qrcode from 'qrcode-generator';
 import { formatPrice } from './catalog.js';
 import { addHit, hits } from './auth.js';
 
+// The cushion-eight mark, hosted with the storefront
+const LOGO_URL = 'https://furniture8home.com/icon-192.png';
 const SHOP_PHONE = '60025 84075';
 const SHOP_WHATSAPP = 'https://wa.me/916002584075';
 const SHOWROOMS = {
@@ -115,7 +117,7 @@ function layout({ preheader, heading, intro, content, footer }) {
 <span style="display:none;max-height:0;overflow:hidden;">${escapeHtml(preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:24px 12px;"><tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fffdf9;border-radius:14px;overflow:hidden;">
-    <tr><td style="background:#26312a;padding:18px 24px;color:#f3eee6;font-family:Georgia,serif;font-size:22px;">Furniture<span style="color:#e2b486;font-style:italic;">8</span>home</td></tr>
+    <tr><td style="background:#26312a;padding:16px 24px;color:#f3eee6;font-family:Georgia,serif;font-size:22px;"><img src="${LOGO_URL}" width="30" height="30" alt="" style="display:inline-block;vertical-align:middle;border-radius:7px;margin-right:10px;border:0;"><span style="vertical-align:middle;">Furniture<span style="color:#e2b486;font-style:italic;">8</span>home</span></td></tr>
     <tr><td style="padding:24px;color:#4e473f;font-size:15px;line-height:1.55;">
       <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-weight:500;font-size:24px;color:#1d1a16;">${escapeHtml(heading)}</h1>
       <p style="margin:0 0 16px;">${intro}</p>
