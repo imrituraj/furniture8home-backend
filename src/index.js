@@ -31,7 +31,7 @@ import {
   updateOrder,
 } from './orders.js';
 import { createRazorpayOrder, fetchPayment, razorpayConfig, verifyPaymentSignature, verifyWebhookSignature } from './razorpay.js';
-import { addHit, adminEmail, adminPin, createSession, credentialsMatch, endSession, hits, requireAdmin } from './auth.js';
+import { MIN_PASSWORD_LENGTH, addHit, adminEmail, adminPassword, createSession, credentialsMatch, endSession, hits, requireAdmin } from './auth.js';
 import { serveMedia } from './media.js';
 import { ensureSeeded, resetCatalog } from './seed.js';
 import { NOTIFY_STATUSES, deliver, loginAlertEmail, loginNoticeEmail, orderPlacedEmails, paymentReceivedEmails, statusEmails } from './emails.js';
@@ -204,8 +204,8 @@ function loginContext(request, enteredEmail) {
 
 async function login(request, env, ctx) {
   const db = env.DB;
-  if (!adminPin(env) || !adminEmail(env)) {
-    throw new HttpError(503, 'Admin login is not set up yet. Set ADMIN_EMAIL and a 6–8 digit ADMIN_PIN for the Worker.');
+  if (!adminPassword(env) || !adminEmail(env)) {
+    throw new HttpError(503, `Admin login is not set up yet. Set ADMIN_EMAIL and an ADMIN_PASSWORD of at least ${MIN_PASSWORD_LENGTH} characters for the Worker.`);
   }
   const ipKey = `login:${clientIp(request)}`;
   // Lock out after repeated failed logins — per device, and site-wide to stop distributed guessing
@@ -213,7 +213,7 @@ async function login(request, env, ctx) {
     throw new HttpError(429, 'Too many failed logins. Try again in 15 minutes.');
   }
   const body = await readJson(request, 1_000);
-  if (!(await credentialsMatch(env, body?.email, body?.pin))) {
+  if (!(await credentialsMatch(env, body?.email, body?.password ?? body?.pin))) {
     const window = 15 * 60 * 1000;
     await db.batch([addHit(db, ipKey, window), addHit(db, 'login:*', window)]);
     // Once a lockout kicks in, tell the owner (at most once per 15 minutes)
@@ -225,7 +225,7 @@ async function login(request, env, ctx) {
       ]);
     }
     // Don't say which one was wrong
-    throw new HttpError(401, 'Incorrect email or passcode. Please try again.');
+    throw new HttpError(401, 'Incorrect email or password. Please try again.');
   }
   const token = await createSession(env);
   // Tell the owner about every successful admin login

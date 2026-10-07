@@ -356,7 +356,7 @@ function loginDetails(info) {
 }
 
 const NOT_YOU =
-  "If this wasn't you, change ADMIN_PIN in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets) straight away. That logs out every device instantly.";
+  "If this wasn't you, change ADMIN_PASSWORD in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets) straight away. That logs out every device instantly.";
 
 /**
  * Sent on every successful admin login.
@@ -371,7 +371,7 @@ export function loginNoticeEmail(env, info) {
     html: layout({
       preheader: `New admin login from ${info.ip}`,
       heading: 'New admin login',
-      intro: 'Someone just logged in to the Furniture8home admin with the correct email and passcode.',
+      intro: 'Someone just logged in to the Furniture8home admin with the correct email and password.',
       content: detailsHtml(details.map(([k, v]) => [k, escapeHtml(v)])),
       footer: escapeHtml(NOT_YOU),
     }),
@@ -387,18 +387,18 @@ export function loginAlertEmail(env, info) {
     to: shopEmail(env),
     subject: 'Security alert: repeated failed admin logins · Furniture8home',
     text: [
-      'Someone has repeatedly entered a wrong email or passcode on the Furniture8home admin. Admin login is locked for them for 15 minutes.',
+      'Someone has repeatedly entered a wrong email or password on the Furniture8home admin. Admin login is locked for them for 15 minutes.',
       '',
       ...details.map(([k, v]) => `${k}: ${v}`),
       '',
-      'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PIN in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets).',
+      'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PASSWORD in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets).',
     ].join('\n'),
     html: layout({
       preheader: 'Repeated failed admin logins were blocked.',
       heading: 'Repeated failed admin logins',
-      intro: 'Someone has repeatedly entered a wrong email or passcode on the Furniture8home admin. Login is locked for them for 15 minutes, and nothing was accessed.',
+      intro: 'Someone has repeatedly entered a wrong email or password on the Furniture8home admin. Login is locked for them for 15 minutes, and nothing was accessed.',
       content: detailsHtml(details.map(([k, v]) => [k, escapeHtml(v)])),
-      footer: 'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PIN in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets).',
+      footer: 'If this was you, wait 15 minutes and try again. If not, nothing was accessed; consider changing ADMIN_PASSWORD in Cloudflare (Worker furniture8home-backend → Settings → Variables and Secrets).',
     }),
   };
 }
